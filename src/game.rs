@@ -7,6 +7,7 @@ pub enum RunState {
     MainMenu,
     NewGame,
     AwaitingInput,
+    PlayerAction(Action),
 
     /// Development affordances
     GenerateMap,
@@ -33,9 +34,15 @@ impl GameState for State {
 
                 self.world.insert(map);
 
-                ui::frame(ctx, &self.world)
+                RunState::AwaitingInput
             }
-            RunState::AwaitingInput => RunState::AwaitingInput,
+            RunState::AwaitingInput => ui::frame(ctx, &self.world),
+            RunState::PlayerAction(action) => {
+                log::debug!("Player action: {:?}", action);
+
+                RunState::AwaitingInput
+            }
+
             RunState::GenerateMap => {
                 let map = SimpleMapBuilder::new(ui::TERM_WIDTH, ui::TERM_HEIGHT).build();
 

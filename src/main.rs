@@ -1,5 +1,6 @@
 use bracket_lib::prelude::main_loop;
 
+mod action;
 mod entity;
 mod game;
 mod map;
@@ -10,9 +11,10 @@ mod prelude {
     pub use specs::{prelude::*, Component};
 
     pub use crate::{
+        action::Action,
         entity::Player,
         game::RunState,
-        map::{Coordinates, Map},
+        map::{Coordinates, Direction, Map},
         ui::Appearance,
     };
 }

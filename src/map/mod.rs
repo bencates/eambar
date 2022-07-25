@@ -1,8 +1,10 @@
 mod builder;
+mod hex_coordinates;
 mod map;
 mod tile;
 
 pub use builder::*;
+pub use hex_coordinates::Direction;
 pub use map::Map;
 
 use crate::prelude::*;

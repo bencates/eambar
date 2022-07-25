@@ -31,5 +31,21 @@ pub fn frame(ctx: &mut BTerm, world: &World) -> RunState {
 
     map::draw(ctx, world);
 
-    RunState::AwaitingInput
+    handle_input(ctx)
+}
+
+fn handle_input(ctx: &BTerm) -> RunState {
+    use {Action::*, Direction::*, RunState::*, VirtualKeyCode::*};
+
+    ctx.key.map_or(AwaitingInput, |key| match key {
+        // Movement keys
+        Q => PlayerAction(Move(NorthWest)),
+        W => PlayerAction(Move(North)),
+        E => PlayerAction(Move(NorthEast)),
+        A => PlayerAction(Move(SouthWest)),
+        S => PlayerAction(Move(South)),
+        D => PlayerAction(Move(SouthEast)),
+
+        _ => AwaitingInput,
+    })
 }
