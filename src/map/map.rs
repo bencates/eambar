@@ -9,7 +9,7 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn new(width: i32, height: i32) -> Self {
+    pub(super) fn new(width: i32, height: i32) -> Self {
         let tiles: Vec<Tile> = (0..(width * height)).map(|_| Tile::default()).collect();
 
         Self {

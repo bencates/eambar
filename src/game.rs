@@ -1,3 +1,4 @@
+use crate::map::{MapBuilder, SimpleMapBuilder};
 use crate::prelude::*;
 use crate::ui;
 
@@ -18,14 +19,20 @@ impl GameState for State {
         let next_run_state: RunState = match *self.world.fetch::<RunState>() {
             RunState::MainMenu => ui::main_menu(ctx),
             RunState::GenerateMap => {
-                let map = Map::new(ui::TERM_WIDTH, ui::TERM_HEIGHT);
+                let map = SimpleMapBuilder::new(ui::TERM_WIDTH, ui::TERM_HEIGHT).build();
 
                 ui::visualize_map(ctx, &map);
 
                 RunState::Idle
             }
             // TODO: remove
-            RunState::Idle => RunState::Idle,
+            RunState::Idle => {
+                if ctx.key == Some(VirtualKeyCode::Q) {
+                    ctx.quit();
+                }
+
+                RunState::Idle
+            }
         };
 
         self.world.insert(next_run_state);
