@@ -13,6 +13,8 @@ mod prelude {
 use prelude::*;
 
 fn main() -> BError {
+    pretty_env_logger::init();
+
     let bterm = ui::setup()?;
     let gamestate = game::State::new();
 

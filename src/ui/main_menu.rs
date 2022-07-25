@@ -11,6 +11,7 @@ pub fn main_menu(ctx: &mut BTerm, selection: usize) -> RunState {
 
     ctx.key.map_or(MainMenu(selection), |key| match key {
         VirtualKeyCode::Q => {
+            log::info!("Quitting");
             ctx.quit();
             MainMenu(selection)
         }
