@@ -1,20 +1,28 @@
 use super::{TERM_HEIGHT, TERM_WIDTH};
 use crate::prelude::*;
 
-pub fn main_menu(ctx: &mut BTerm, selection: usize) -> RunState {
-    use RunState::MainMenu;
-
+/// Render the main menu
+///
+/// Lists the available options
+pub fn main_menu(ctx: &mut BTerm) -> RunState {
     ctx.cls();
     ctx.draw_box(0, 0, TERM_WIDTH - 1, TERM_HEIGHT - 1, WHITE, BLACK);
 
-    ctx.print_centered(TERM_HEIGHT / 2, "(Q)uit");
+    ctx.print_centered(TERM_HEIGHT / 2, "Generate (M)ap");
+    ctx.print_centered(TERM_HEIGHT / 2 + 1, "(Q)uit");
 
-    ctx.key.map_or(MainMenu(selection), |key| match key {
+    ctx.key.map_or(RunState::MainMenu, |key| match key {
+        VirtualKeyCode::M => {
+            log::info!("Generating a map");
+
+            RunState::GenerateMap
+        }
         VirtualKeyCode::Q => {
             log::info!("Quitting");
             ctx.quit();
-            MainMenu(selection)
+            RunState::MainMenu
         }
-        _ => MainMenu(selection),
+
+        _ => RunState::MainMenu,
     })
 }
