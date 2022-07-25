@@ -1,4 +1,5 @@
 mod main_menu;
+mod map;
 mod map_visualizer;
 
 use crate::prelude::*;
@@ -23,4 +24,12 @@ pub fn setup() -> BResult<BTerm> {
         .with_title("Roguelike Tutorial")
         .with_vsync(false)
         .build()
+}
+
+pub fn frame(ctx: &mut BTerm, world: &World) -> RunState {
+    ctx.cls();
+
+    map::draw(ctx, world);
+
+    RunState::AwaitingInput
 }

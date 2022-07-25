@@ -2,10 +2,14 @@ use crate::map::{MapBuilder, SimpleMapBuilder};
 use crate::prelude::*;
 use crate::ui;
 
+#[derive(Clone, Copy, PartialEq)]
 pub enum RunState {
     MainMenu,
+    NewGame,
+    AwaitingInput,
+
+    /// Development affordances
     GenerateMap,
-    // TODO: remove
     Idle,
 }
 
@@ -16,8 +20,22 @@ pub struct State {
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut bracket_lib::prelude::BTerm) {
-        let next_run_state: RunState = match *self.world.fetch::<RunState>() {
+        let run_state = *self.world.fetch::<RunState>();
+
+        let next_run_state: RunState = match run_state {
             RunState::MainMenu => ui::main_menu(ctx),
+            RunState::NewGame => {
+                let map = SimpleMapBuilder::new(ui::TERM_WIDTH, ui::TERM_HEIGHT).build();
+
+                if let Some(room) = map.rooms.first() {
+                    crate::entity::spawn_player(&mut self.world, room.center())
+                }
+
+                self.world.insert(map);
+
+                ui::frame(ctx, &self.world)
+            }
+            RunState::AwaitingInput => RunState::AwaitingInput,
             RunState::GenerateMap => {
                 let map = SimpleMapBuilder::new(ui::TERM_WIDTH, ui::TERM_HEIGHT).build();
 
@@ -25,7 +43,6 @@ impl GameState for State {
 
                 RunState::Idle
             }
-            // TODO: remove
             RunState::Idle => {
                 if ctx.key == Some(VirtualKeyCode::Q) {
                     ctx.quit();
@@ -46,6 +63,9 @@ impl State {
         let mut dispatcher = DispatcherBuilder::new().build();
 
         dispatcher.setup(&mut world);
+        world.register::<Player>();
+        world.register::<Coordinates>();
+        world.register::<Appearance>();
 
         world.insert(RunState::MainMenu);
 

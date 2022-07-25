@@ -21,6 +21,8 @@ impl SimpleMapBuilder {
             map.tiles[pos.to_index(width)] = Tile::floor();
         }
 
+        map.rooms = rooms;
+
         Self { map }
     }
 }
