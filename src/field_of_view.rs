@@ -24,6 +24,10 @@ impl Viewshed {
     pub fn is_visible(&self, coord: Coordinate) -> bool {
         self.visible_tiles.contains(&coord)
     }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Coordinate> + '_ {
+        self.visible_tiles.iter()
+    }
 }
 
 pub struct VisibilitySystem;

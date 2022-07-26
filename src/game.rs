@@ -3,7 +3,7 @@ use crate::ui;
 use crate::{
     action::take_action,
     field_of_view::VisibilitySystem,
-    map::{MapBuilder, SimpleMapBuilder},
+    map::{IndexMapSystem, MapBuilder, SimpleMapBuilder},
 };
 
 #[derive(Clone, Copy, PartialEq)]
@@ -90,6 +90,7 @@ impl State {
 
         let mut dispatcher = DispatcherBuilder::new()
             .with(VisibilitySystem, "visibility", &[])
+            .with(IndexMapSystem, "index_map", &["visibility"])
             .build();
 
         dispatcher.setup(&mut world);

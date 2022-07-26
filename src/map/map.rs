@@ -1,6 +1,6 @@
 use super::tile::Tile;
 use crate::prelude::*;
-use std::ops::Index;
+use std::ops::{Index, IndexMut};
 
 pub struct Map {
     /// Tiles are stored as an "odd-q" rectangle in row-major order
@@ -33,6 +33,13 @@ impl Index<Point> for Map {
 
     fn index(&self, pos: Point) -> &Self::Output {
         &self.tiles[pos.to_index(self.width)]
+    }
+}
+
+impl IndexMut<Point> for Map {
+    fn index_mut(&mut self, pos: Point) -> &mut Self::Output {
+        let idx = pos.to_index(self.width);
+        &mut self.tiles[idx]
     }
 }
 
