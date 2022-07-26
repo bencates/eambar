@@ -5,21 +5,49 @@ use crate::prelude::*;
 #[storage(NullStorage)]
 pub struct Player;
 
-pub fn spawn_player(world: &mut World, pos: Point) {
-    let player = world
-        .create_entity()
+/// Marker trait for monsters.
+#[derive(Component, Default)]
+#[storage(NullStorage)]
+pub struct Monster;
+
+pub fn player(entity: EntityBuilder) -> EntityBuilder {
+    entity
         .with(Player)
-        // .with(Name::new(Player))
+        // .with(Name::new("Player"))
         .with(Appearance {
             color: ColorPair::new(YELLOW, BLACK),
             glyph: '@',
         })
-        .with(Coordinate::from(pos))
         .with(Viewshed::new(8))
-        // .with(CombatStats::new(30, 5, 2))
-        .build();
+    // .with(CombatStats::new(30, 5, 2))
+}
 
-    world.insert(player);
-    // world.insert(pos);
-    // world.insert(Inventory::default());
+pub mod monster {
+    use crate::prelude::*;
+
+    pub fn infected_crewmember(entity: EntityBuilder) -> EntityBuilder {
+        entity
+            .with(Monster)
+            // .with(Name::new("Infected Crewmember"))
+            .with(Appearance {
+                color: ColorPair::new(RED, BLACK),
+                glyph: 'z',
+            })
+            // .with(BlocksTile)
+            .with(Viewshed::new(8))
+        // .with(CombatStats::new(16, 4, 1))
+    }
+
+    pub fn alien_hatchling(entity: EntityBuilder) -> EntityBuilder {
+        entity
+            .with(Monster)
+            // .with(Name::new("Alien Hatchling"))
+            .with(Appearance {
+                color: ColorPair::new(RED, BLACK),
+                glyph: 'h',
+            })
+            // .with(BlocksTile)
+            .with(Viewshed::new(8))
+        // .with(CombatStats::new(16, 4, 1))
+    }
 }

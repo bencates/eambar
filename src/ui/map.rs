@@ -8,8 +8,6 @@ pub(super) fn draw(ctx: &mut BTerm, world: &World) {
     let appearances = world.read_component::<Appearance>();
     let viewsheds = world.read_component::<Viewshed>();
 
-    let player_pos = coordinates.get(*player).unwrap();
-    let player_appearance = appearances.get(*player).unwrap();
     let player_viewshed = viewsheds.get(*player).unwrap();
 
     ctx.set_active_console(1);
@@ -26,16 +24,10 @@ pub(super) fn draw(ctx: &mut BTerm, world: &World) {
             let map_coord = Coordinate::from(map_pos);
 
             if let Ok(appearance) = Appearance::try_from(&map[map_pos]) {
-                let mut pos = PointF::new(x as f32, y as f32);
-
-                if x & 1 != 0 {
-                    pos.y += 0.5;
-                }
-
                 log::trace!(
                     "Printing '{}' to {:?}, color {:?}",
                     appearance.glyph,
-                    pos,
+                    map_coord,
                     appearance.color
                 );
 
@@ -45,7 +37,7 @@ pub(super) fn draw(ctx: &mut BTerm, world: &World) {
                 }
 
                 ctx.set_fancy(
-                    pos,
+                    map_coord.into(),
                     0,
                     rotation,
                     scale,
@@ -53,21 +45,22 @@ pub(super) fn draw(ctx: &mut BTerm, world: &World) {
                     appearance.color.bg,
                     to_cp437(appearance.glyph),
                 );
-
-                if map_pos == Point::from(*player_pos) {
-                    ctx.set_fancy(
-                        pos,
-                        1,
-                        rotation,
-                        scale,
-                        player_appearance.color.fg,
-                        player_appearance.color.bg,
-                        to_cp437(player_appearance.glyph),
-                    );
-                }
             }
         }
     }
 
+    for (coord, appearance) in (&coordinates, &appearances).join() {
+        if player_viewshed.is_visible(*coord) {
+            ctx.set_fancy(
+                PointF::from(*coord),
+                1,
+                rotation,
+                scale,
+                appearance.color.fg,
+                appearance.color.bg,
+                to_cp437(appearance.glyph),
+            );
+        }
+    }
     ctx.set_active_console(0);
 }

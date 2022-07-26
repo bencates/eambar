@@ -39,6 +39,18 @@ impl From<Point> for Coordinate {
     }
 }
 
+/// Tiles rendering is an "odd-q" rectangle. Odd numbered rows are shifted down
+/// (+y) by half a tile.
+impl From<Coordinate> for PointF {
+    fn from(coord: Coordinate) -> Self {
+        let Point { x, y } = coord.into();
+
+        let y = if x & 1 != 0 { y as f32 + 0.5 } else { y as f32 };
+
+        Self { x: x as f32, y }
+    }
+}
+
 /// The six cardinal directions on our hex grid
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Direction {

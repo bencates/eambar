@@ -23,6 +23,10 @@ impl Map {
         }
     }
 
+    pub fn spawn_points(&self) -> impl Iterator<Item = Coordinate> + '_ {
+        self.rooms.iter().map(|room| room.center().into())
+    }
+
     pub fn dimensions(&self) -> Point {
         Point::new(self.width, self.height)
     }

@@ -3,6 +3,7 @@ use crate::ui;
 use crate::{
     action::take_action,
     field_of_view::VisibilitySystem,
+    level::build_level,
     map::{IndexMapSystem, MapBuilder, SimpleMapBuilder},
 };
 
@@ -33,13 +34,7 @@ impl GameState for State {
         let next_run_state: RunState = match run_state {
             RunState::MainMenu => ui::main_menu(ctx),
             RunState::NewGame => {
-                let map = SimpleMapBuilder::new(ui::TERM_WIDTH, ui::TERM_HEIGHT).build();
-
-                if let Some(room) = map.rooms.first() {
-                    crate::entity::spawn_player(&mut self.world, room.center())
-                }
-
-                self.world.insert(map);
+                build_level(&mut self.world);
 
                 self.dispatcher.dispatch(&mut self.world);
                 self.world.maintain();
@@ -95,9 +90,10 @@ impl State {
             .build();
 
         dispatcher.setup(&mut world);
-        world.register::<Player>();
         world.register::<Appearance>();
+        world.register::<Monster>();
 
+        world.insert(RandomNumberGenerator::new());
         world.insert(RunState::MainMenu);
 
         Self { world, dispatcher }

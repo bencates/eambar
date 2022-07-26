@@ -4,6 +4,7 @@ mod action;
 mod entity;
 mod field_of_view;
 mod game;
+mod level;
 mod map;
 mod ui;
 
@@ -13,7 +14,7 @@ mod prelude {
 
     pub use crate::{
         action::Action,
-        entity::Player,
+        entity::{Monster, Player},
         field_of_view::Viewshed,
         game::RunState,
         map::{Coordinate, Direction, Map},
