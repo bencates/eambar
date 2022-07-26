@@ -17,8 +17,8 @@ use Direction::*;
 ///   +r     -s
 #[derive(Clone, Copy, Component, Debug, Hash, PartialEq, Eq)]
 pub struct Coordinate {
-    q: i32,
-    r: i32,
+    pub q: i32,
+    pub r: i32,
 }
 
 impl From<Coordinate> for Point {

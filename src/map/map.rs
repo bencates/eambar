@@ -22,19 +22,17 @@ impl Map {
             height,
         }
     }
+
+    pub fn dimensions(&self) -> Point {
+        Point::new(self.width, self.height)
+    }
 }
 
 impl Index<Point> for Map {
     type Output = Tile;
 
     fn index(&self, pos: Point) -> &Self::Output {
-        &self.tiles[self.point2d_to_index(pos)]
-    }
-}
-
-impl Algorithm2D for Map {
-    fn dimensions(&self) -> Point {
-        Point::new(self.width, self.height)
+        &self.tiles[pos.to_index(self.width)]
     }
 }
 
