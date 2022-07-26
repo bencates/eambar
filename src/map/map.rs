@@ -38,4 +38,8 @@ impl Algorithm2D for Map {
     }
 }
 
-impl BaseMap for Map {}
+impl BaseMap for Map {
+    fn is_opaque(&self, idx: usize) -> bool {
+        self.tiles[idx].is_opaque()
+    }
+}

@@ -30,6 +30,10 @@ impl Tile {
         }
     }
 
+    pub fn is_opaque(&self) -> bool {
+        self.tile_type == TileType::Wall
+    }
+
     pub fn is_blocked(&self) -> bool {
         self.tile_type == TileType::Wall
     }

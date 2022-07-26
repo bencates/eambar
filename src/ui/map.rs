@@ -3,10 +3,14 @@ use crate::prelude::*;
 pub(super) fn draw(ctx: &mut BTerm, world: &World) {
     let map = world.fetch::<Map>();
     let player = world.fetch::<Entity>();
+
     let coordinates = world.read_component::<Coordinate>();
     let appearances = world.read_component::<Appearance>();
+    let viewsheds = world.read_component::<Viewshed>();
+
     let player_pos = coordinates.get(*player).unwrap();
     let player_appearance = appearances.get(*player).unwrap();
+    let player_viewshed = viewsheds.get(*player).unwrap();
 
     ctx.set_active_console(1);
     ctx.cls();
@@ -19,6 +23,7 @@ pub(super) fn draw(ctx: &mut BTerm, world: &World) {
     for x in 0..map_dimensions.x {
         for y in 0..map_dimensions.y {
             let map_pos = Point::new(x, y);
+            let map_coord = Coordinate::from(map_pos);
 
             if let Ok(appearance) = Appearance::try_from(&map[map_pos]) {
                 let mut pos = PointF::new(x as f32, y as f32);
@@ -34,12 +39,17 @@ pub(super) fn draw(ctx: &mut BTerm, world: &World) {
                     appearance.color
                 );
 
+                let mut fg = appearance.color.fg;
+                if !player_viewshed.is_visible(map_coord) {
+                    fg = fg.to_greyscale();
+                }
+
                 ctx.set_fancy(
                     pos,
                     0,
                     rotation,
                     scale,
-                    appearance.color.fg,
+                    fg,
                     appearance.color.bg,
                     to_cp437(appearance.glyph),
                 );

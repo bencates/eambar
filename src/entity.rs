@@ -15,7 +15,7 @@ pub fn spawn_player(world: &mut World, pos: Point) {
             glyph: '@',
         })
         .with(Coordinate::from(pos))
-        // .with(Viewshed::new(8))
+        .with(Viewshed::new(8))
         // .with(CombatStats::new(30, 5, 2))
         .build();
 

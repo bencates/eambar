@@ -2,6 +2,7 @@ use crate::prelude::*;
 use crate::ui;
 use crate::{
     action::take_action,
+    field_of_view::VisibilitySystem,
     map::{MapBuilder, SimpleMapBuilder},
 };
 
@@ -22,7 +23,7 @@ pub enum RunState {
 
 pub struct State {
     world: World,
-    _dispatcher: Dispatcher<'static, 'static>,
+    dispatcher: Dispatcher<'static, 'static>,
 }
 
 impl GameState for State {
@@ -40,6 +41,9 @@ impl GameState for State {
 
                 self.world.insert(map);
 
+                self.dispatcher.dispatch(&mut self.world);
+                self.world.maintain();
+
                 RunState::AwaitingInput
             }
             RunState::AwaitingInput => ui::frame(ctx, &self.world),
@@ -53,7 +57,12 @@ impl GameState for State {
                     Err(_) => RunState::AwaitingInput,
                 }
             }
-            RunState::Running => RunState::AwaitingInput,
+            RunState::Running => {
+                self.dispatcher.dispatch(&mut self.world);
+                self.world.maintain();
+
+                RunState::AwaitingInput
+            }
 
             RunState::GenerateMap => {
                 let map = SimpleMapBuilder::new(ui::TERM_WIDTH, ui::TERM_HEIGHT).build();
@@ -79,18 +88,16 @@ impl State {
     pub fn new() -> Self {
         let mut world = World::new();
 
-        let mut dispatcher = DispatcherBuilder::new().build();
+        let mut dispatcher = DispatcherBuilder::new()
+            .with(VisibilitySystem, "visibility", &[])
+            .build();
 
         dispatcher.setup(&mut world);
         world.register::<Player>();
-        world.register::<Coordinate>();
         world.register::<Appearance>();
 
         world.insert(RunState::MainMenu);
 
-        Self {
-            world,
-            _dispatcher: dispatcher,
-        }
+        Self { world, dispatcher }
     }
 }

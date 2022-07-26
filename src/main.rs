@@ -2,6 +2,7 @@ use bracket_lib::prelude::main_loop;
 
 mod action;
 mod entity;
+mod field_of_view;
 mod game;
 mod map;
 mod ui;
@@ -13,6 +14,7 @@ mod prelude {
     pub use crate::{
         action::Action,
         entity::Player,
+        field_of_view::Viewshed,
         game::RunState,
         map::{Coordinate, Direction, Map},
         ui::Appearance,
