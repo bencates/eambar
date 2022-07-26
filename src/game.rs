@@ -50,7 +50,7 @@ impl GameState for State {
 
                 match take_action(&mut self.world, player, action) {
                     Ok(()) => RunState::Running,
-                    Err(_) => todo!("handle input errors"),
+                    Err(_) => RunState::AwaitingInput,
                 }
             }
             RunState::Running => RunState::AwaitingInput,

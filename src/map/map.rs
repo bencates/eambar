@@ -3,6 +3,7 @@ use crate::prelude::*;
 use std::ops::Index;
 
 pub struct Map {
+    /// Tiles are stored as an "odd-q" rectangle in row-major order
     pub(super) tiles: Vec<Tile>,
     pub rooms: Vec<Rect>,
     width: i32,

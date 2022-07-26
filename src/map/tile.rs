@@ -29,6 +29,10 @@ impl Tile {
             ..Default::default()
         }
     }
+
+    pub fn is_blocked(&self) -> bool {
+        self.tile_type == TileType::Wall
+    }
 }
 
 impl TryFrom<&Tile> for Appearance {
