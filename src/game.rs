@@ -65,7 +65,8 @@ impl GameState for State {
             }
 
             RunState::GenerateMap => {
-                let map = SimpleMapBuilder::new(ui::TERM_WIDTH, ui::TERM_HEIGHT).build();
+                let mut map = SimpleMapBuilder::new(ui::TERM_WIDTH, ui::TERM_HEIGHT).build();
+                map.reveal();
 
                 ui::visualize_map(ctx, &map);
 

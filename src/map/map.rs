@@ -26,6 +26,10 @@ impl Map {
     pub fn dimensions(&self) -> Point {
         Point::new(self.width, self.height)
     }
+
+    pub fn reveal(&mut self) {
+        self.tiles.iter_mut().for_each(|tile| tile.reveal());
+    }
 }
 
 impl Index<Point> for Map {

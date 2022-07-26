@@ -2,6 +2,8 @@ use super::super::tile::Tile;
 use super::MapBuilder;
 use crate::prelude::*;
 
+use hex2d::Coordinate as HexCoord;
+
 pub struct SimpleMapBuilder {
     map: Map,
     // rooms: Vec<Rect>,
@@ -37,7 +39,7 @@ const MAX_ROOMS: i32 = 30;
 const MIN_ROOM_SIZE: i32 = 6;
 const MAX_ROOM_SIZE: i32 = 10;
 
-fn build_rooms_and_corridors(map_width: i32, map_height: i32) -> (Vec<Rect>, Vec<VectorLine>) {
+fn build_rooms_and_corridors(map_width: i32, map_height: i32) -> (Vec<Rect>, Vec<Vec<Point>>) {
     let mut rooms = Vec::new();
     let mut corridors = Vec::new();
 
@@ -63,17 +65,17 @@ fn build_rooms_and_corridors(map_width: i32, map_height: i32) -> (Vec<Rect>, Vec
         }
 
         if let Some(prev_room) = rooms.last() {
-            let prev_center = prev_room.center();
-            let new_center = new_room.center();
+            let Coordinate { q: q1, r: r1 } = prev_room.center().into();
+            let Coordinate { q: q2, r: r2 } = new_room.center().into();
 
-            let intersection = if rng.range(0, 2) == 1 {
-                (prev_center.x, new_center.y).into()
-            } else {
-                (new_center.x, prev_center.y).into()
-            };
+            let c1 = HexCoord::new(q1, r1);
+            let c2 = HexCoord::new(q2, r2);
 
-            corridors.push(VectorLine::new(prev_center, intersection));
-            corridors.push(VectorLine::new(intersection, new_center));
+            corridors.push(
+                c1.line_to_iter(c2)
+                    .map(|c| Coordinate { q: c.x, r: c.y }.into())
+                    .collect(),
+            );
         }
 
         rooms.push(new_room);
