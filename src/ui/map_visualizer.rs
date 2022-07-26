@@ -17,7 +17,7 @@ pub fn visualize_map(ctx: &mut BTerm, map: &Map) {
             if let Ok(appearance) = Appearance::try_from(&map[map_pos]) {
                 let mut pos = PointF::new(x as f32, y as f32);
 
-                if x % 2 == 0 {
+                if x & 1 != 0 {
                     pos.y += 0.5;
                 }
 

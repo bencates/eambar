@@ -1,13 +1,19 @@
-use crate::map::{MapBuilder, SimpleMapBuilder};
 use crate::prelude::*;
 use crate::ui;
+use crate::{
+    action::take_action,
+    map::{MapBuilder, SimpleMapBuilder},
+};
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum RunState {
+    /// Show the main menu
     MainMenu,
+    /// Initialize the world
     NewGame,
     AwaitingInput,
     PlayerAction(Action),
+    Running,
 
     /// Development affordances
     GenerateMap,
@@ -40,8 +46,14 @@ impl GameState for State {
             RunState::PlayerAction(action) => {
                 log::debug!("Player action: {:?}", action);
 
-                RunState::AwaitingInput
+                let player = *self.world.fetch::<Entity>();
+
+                match take_action(&mut self.world, player, action) {
+                    Ok(()) => RunState::Running,
+                    Err(_) => todo!("handle input errors"),
+                }
             }
+            RunState::Running => RunState::AwaitingInput,
 
             RunState::GenerateMap => {
                 let map = SimpleMapBuilder::new(ui::TERM_WIDTH, ui::TERM_HEIGHT).build();
@@ -71,7 +83,7 @@ impl State {
 
         dispatcher.setup(&mut world);
         world.register::<Player>();
-        world.register::<Coordinates>();
+        world.register::<Coordinate>();
         world.register::<Appearance>();
 
         world.insert(RunState::MainMenu);

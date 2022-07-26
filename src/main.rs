@@ -14,7 +14,7 @@ mod prelude {
         action::Action,
         entity::Player,
         game::RunState,
-        map::{Coordinates, Direction, Map},
+        map::{Coordinate, Direction, Map},
         ui::Appearance,
     };
 }
