@@ -14,6 +14,7 @@ pub fn take_action(world: &mut World, entity: Entity, action: Action) -> Result<
         Action::Move(direction) => {
             let map = world.fetch::<Map>();
             let mut coordinates = world.write_component::<Coordinate>();
+            let mut viewsheds = world.write_component::<Viewshed>();
 
             // TODO: move to system
             if let Some(coord) = coordinates.get_mut(entity) {
@@ -25,6 +26,8 @@ pub fn take_action(world: &mut World, entity: Entity, action: Action) -> Result<
                 }
 
                 *coord = new_coord;
+
+                viewsheds.get_mut(entity).map(|vs| vs.touch());
             }
 
             Ok(())
