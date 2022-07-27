@@ -33,7 +33,7 @@ pub mod monster {
                 color: ColorPair::new(RED, BLACK),
                 glyph: 'z',
             })
-            // .with(BlocksTile)
+            .with(BlocksTile)
             .with(Viewshed::new(8))
         // .with(CombatStats::new(16, 4, 1))
     }
@@ -46,7 +46,7 @@ pub mod monster {
                 color: ColorPair::new(RED, BLACK),
                 glyph: 'h',
             })
-            // .with(BlocksTile)
+            .with(BlocksTile)
             .with(Viewshed::new(8))
         // .with(CombatStats::new(16, 4, 1))
     }

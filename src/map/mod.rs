@@ -9,6 +9,9 @@ pub use map::Map;
 
 use crate::prelude::*;
 
+#[derive(Component)]
+pub struct BlocksTile;
+
 pub struct IndexMapSystem;
 
 impl<'a> System<'a> for IndexMapSystem {
@@ -17,16 +20,20 @@ impl<'a> System<'a> for IndexMapSystem {
         Entities<'a>,
         ReadStorage<'a, Player>,
         ReadStorage<'a, Coordinate>,
+        ReadStorage<'a, BlocksTile>,
         ReadStorage<'a, Viewshed>,
     );
 
-    fn run(&mut self, (mut map, entities, players, coordinates, viewsheds): Self::SystemData) {
+    fn run(
+        &mut self,
+        (mut map, entities, players, coordinates, blockers, viewsheds): Self::SystemData,
+    ) {
         map.tiles.iter_mut().for_each(|tile| tile.reset_index());
 
         for (entity, coord) in (&entities, &coordinates).join() {
-            // if blockers.contains(entity) {
-            //     map[*coord].block();
-            // }
+            if blockers.contains(entity) {
+                map[*coord].block();
+            }
 
             map[*coord].add_entity(entity);
         }

@@ -17,7 +17,7 @@ mod prelude {
         engine::RunState,
         entity::{Monster, Player},
         game_mechanics::{Intents, Viewshed},
-        map::{Coordinate, Direction, Map},
+        map::{BlocksTile, Coordinate, Direction, Map},
         player_turn::Action,
         ui::Appearance,
     };

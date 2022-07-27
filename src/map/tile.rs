@@ -70,9 +70,9 @@ impl Tile {
         self.contents.clear();
     }
 
-    // pub(super) fn block(&mut self) {
-    //     self.blocked = true;
-    // }
+    pub(super) fn block(&mut self) {
+        self.blocked = true;
+    }
 
     pub(super) fn reveal(&mut self) {
         self.visible = true;
