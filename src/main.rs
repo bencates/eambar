@@ -1,6 +1,7 @@
 use bracket_lib::prelude::main_loop;
 
 mod action;
+mod ai;
 mod entity;
 mod field_of_view;
 mod game;

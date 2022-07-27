@@ -34,6 +34,26 @@ impl Map {
     pub fn reveal(&mut self) {
         self.tiles.iter_mut().for_each(|tile| tile.reveal());
     }
+
+    pub fn path(
+        &self,
+        start: Coordinate,
+        end: Coordinate,
+    ) -> Option<impl Iterator<Item = Coordinate> + '_> {
+        let path = a_star_search(start.to_index(self.width), end.to_index(self.width), self);
+
+        path.success.then(|| {
+            path.steps
+                .into_iter()
+                .map(|idx| Coordinate::from_index(idx, self.width))
+        })
+    }
+
+    fn in_bounds(&self, coord: Coordinate) -> bool {
+        let Point { x, y } = coord.into();
+
+        x < self.width && y < self.height
+    }
 }
 
 impl Index<Coordinate> for Map {
@@ -51,4 +71,22 @@ impl IndexMut<Coordinate> for Map {
     }
 }
 
-impl BaseMap for Map {}
+impl BaseMap for Map {
+    fn get_available_exits(&self, idx: usize) -> SmallVec<[(usize, f32); 10]> {
+        Coordinate::from_index(idx, self.width)
+            .neighbors()
+            .into_iter()
+            .filter_map(|potential_exit| {
+                (self.in_bounds(potential_exit) && !self[potential_exit].is_blocked())
+                    .then(|| (potential_exit.to_index(self.width), 1.0))
+            })
+            .collect()
+    }
+
+    fn get_pathing_distance(&self, idx1: usize, idx2: usize) -> f32 {
+        let c1 = Coordinate::from_index(idx1, self.width);
+        let c2 = Coordinate::from_index(idx2, self.width);
+
+        c1.distance(c2) as f32
+    }
+}

@@ -1,5 +1,6 @@
 /// Hexagons are the bestagons!
 use crate::prelude::*;
+use hex2d::Coordinate as Hex2dCoordinate;
 use std::ops::Add;
 use Direction::*;
 
@@ -33,6 +34,21 @@ impl Coordinate {
     pub fn to_index(self, width: impl TryInto<usize>) -> usize {
         Point::from(self).to_index(width)
     }
+
+    pub fn neighbors(self) -> [Self; 6] {
+        [
+            self + North,
+            self + NorthEast,
+            self + SouthEast,
+            self + South,
+            self + SouthWest,
+            self + NorthWest,
+        ]
+    }
+
+    pub fn distance(self, other: Self) -> i32 {
+        Hex2dCoordinate::from(self).distance(other.into())
+    }
 }
 
 impl From<Coordinate> for Point {
@@ -50,6 +66,18 @@ impl From<Point> for Coordinate {
             q: x,
             r: y - (x - (x & 1)) / 2,
         }
+    }
+}
+
+impl From<Coordinate> for Hex2dCoordinate {
+    fn from(c: Coordinate) -> Self {
+        Self { x: c.q, y: c.r }
+    }
+}
+
+impl From<Hex2dCoordinate> for Coordinate {
+    fn from(c: Hex2dCoordinate) -> Self {
+        Self { q: c.x, r: c.y }
     }
 }
 

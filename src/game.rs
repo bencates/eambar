@@ -1,10 +1,6 @@
-use crate::prelude::*;
-use crate::ui;
 use crate::{
-    action::take_action,
-    field_of_view::VisibilitySystem,
-    level::build_level,
-    map::IndexMapSystem,
+    action::take_action, ai::MonsterAI, field_of_view::VisibilitySystem, level::build_level,
+    map::IndexMapSystem, prelude::*, ui,
 };
 
 #[derive(Clone, Copy, PartialEq)]
@@ -70,7 +66,8 @@ impl State {
         let mut world = World::new();
 
         let mut dispatcher = DispatcherBuilder::new()
-            .with(VisibilitySystem, "visibility", &[])
+            .with(MonsterAI, "monster_ai", &[])
+            .with(VisibilitySystem, "visibility", &["monster_ai"])
             .with(IndexMapSystem, "index_map", &["visibility"])
             .build();
 
