@@ -2,9 +2,9 @@ use bracket_lib::prelude::main_loop;
 
 mod action;
 mod ai;
+mod engine;
 mod entity;
 mod field_of_view;
-mod game;
 mod level;
 mod map;
 mod ui;
@@ -15,9 +15,9 @@ mod prelude {
 
     pub use crate::{
         action::Action,
+        engine::RunState,
         entity::{Monster, Player},
         field_of_view::Viewshed,
-        game::RunState,
         map::{Coordinate, Direction, Map},
         ui::Appearance,
     };
@@ -29,7 +29,7 @@ fn main() -> BError {
     pretty_env_logger::init();
 
     let bterm = ui::setup()?;
-    let gamestate = game::State::new();
+    let gamestate = engine::GameEngine::new();
 
     main_loop(bterm, gamestate)
 }

@@ -2,6 +2,7 @@ use crate::{
     action::take_action, ai::MonsterAI, field_of_view::VisibilitySystem, level::build_level,
     map::IndexMapSystem, prelude::*, ui,
 };
+use RunState::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum RunState {
@@ -17,51 +18,43 @@ pub enum RunState {
     GenerateMap(ui::MapVisualizerState),
 }
 
-pub struct State {
+pub struct GameEngine {
     world: World,
     dispatcher: Dispatcher<'static, 'static>,
 }
 
-impl GameState for State {
+impl GameState for GameEngine {
     fn tick(&mut self, ctx: &mut bracket_lib::prelude::BTerm) {
         let run_state = *self.world.fetch::<RunState>();
 
         let next_run_state: RunState = match run_state {
-            RunState::MainMenu => ui::main_menu(ctx),
-            RunState::NewGame => {
+            MainMenu => ui::main_menu(ctx),
+            NewGame => {
                 build_level(&mut self.world);
 
-                self.dispatcher.dispatch(&mut self.world);
-                self.world.maintain();
-
-                RunState::AwaitingInput
+                self.run()
             }
-            RunState::AwaitingInput => ui::frame(ctx, &self.world),
-            RunState::PlayerAction(action) => {
+            AwaitingInput => ui::frame(ctx, &self.world),
+            PlayerAction(action) => {
                 log::debug!("Player action: {:?}", action);
 
                 let player = *self.world.fetch::<Entity>();
 
                 match take_action(&mut self.world, player, action) {
-                    Ok(()) => RunState::Running,
-                    Err(_) => RunState::AwaitingInput,
+                    Ok(()) => Running,
+                    Err(_) => AwaitingInput,
                 }
             }
-            RunState::Running => {
-                self.dispatcher.dispatch(&mut self.world);
-                self.world.maintain();
+            Running => self.run(),
 
-                RunState::AwaitingInput
-            }
-
-            RunState::GenerateMap(state) => ui::visualize_map(ctx, &mut self.world, state),
+            GenerateMap(state) => ui::visualize_map(ctx, &mut self.world, state),
         };
 
         self.world.insert(next_run_state);
     }
 }
 
-impl State {
+impl GameEngine {
     pub fn new() -> Self {
         let mut world = World::new();
 
@@ -76,8 +69,15 @@ impl State {
         world.register::<Monster>();
 
         world.insert(RandomNumberGenerator::new());
-        world.insert(RunState::MainMenu);
+        world.insert(MainMenu);
 
         Self { world, dispatcher }
+    }
+
+    fn run(&mut self) -> RunState {
+        self.dispatcher.dispatch(&mut self.world);
+        self.world.maintain();
+
+        AwaitingInput
     }
 }
