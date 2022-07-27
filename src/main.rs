@@ -3,7 +3,6 @@ use bracket_lib::prelude::main_loop;
 mod ai;
 mod engine;
 mod entity;
-mod field_of_view;
 mod game_mechanics;
 mod level;
 mod map;
@@ -17,8 +16,7 @@ mod prelude {
     pub use crate::{
         engine::RunState,
         entity::{Monster, Player},
-        field_of_view::Viewshed,
-        game_mechanics::Intents,
+        game_mechanics::{Intents, Viewshed},
         map::{Coordinate, Direction, Map},
         player_turn::Action,
         ui::Appearance,

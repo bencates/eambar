@@ -1,8 +1,11 @@
+mod field_of_view;
 mod movement;
 
+pub use field_of_view::*;
 pub use movement::*;
 
 use crate::prelude::*;
+
 #[derive(SystemData)]
 pub struct Intents<'a> {
     wants_to_move: WriteStorage<'a, WantsToMove>,
