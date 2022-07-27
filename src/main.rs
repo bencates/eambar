@@ -1,12 +1,13 @@
 use bracket_lib::prelude::main_loop;
 
-mod action;
 mod ai;
 mod engine;
 mod entity;
 mod field_of_view;
+mod game_mechanics;
 mod level;
 mod map;
+mod player_turn;
 mod ui;
 
 mod prelude {
@@ -14,11 +15,12 @@ mod prelude {
     pub use specs::{prelude::*, Component};
 
     pub use crate::{
-        action::Action,
         engine::RunState,
         entity::{Monster, Player},
         field_of_view::Viewshed,
+        game_mechanics::Intents,
         map::{Coordinate, Direction, Map},
+        player_turn::Action,
         ui::Appearance,
     };
 }

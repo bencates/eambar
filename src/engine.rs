@@ -1,11 +1,6 @@
 use crate::{
-    action::{take_action, MovementSystem},
-    ai::MonsterAI,
-    field_of_view::VisibilitySystem,
-    level::build_level,
-    map::IndexMapSystem,
-    prelude::*,
-    ui,
+    ai::MonsterAI, field_of_view::VisibilitySystem, game_mechanics::MovementSystem,
+    level::build_level, map::IndexMapSystem, player_turn::try_action, prelude::*, ui,
 };
 use RunState::*;
 
@@ -40,16 +35,10 @@ impl GameState for GameEngine {
                 self.run()
             }
             AwaitingInput => ui::frame(ctx, &self.world),
-            PlayerAction(action) => {
-                log::debug!("Player action: {:?}", action);
-
-                let player = *self.world.fetch::<Entity>();
-
-                match take_action(&mut self.world, player, action) {
-                    Ok(()) => Running,
-                    Err(_) => AwaitingInput,
-                }
-            }
+            PlayerAction(action) => match try_action(&mut self.world, action) {
+                Ok(()) => Running,
+                Err(_) => AwaitingInput,
+            },
             Running => self.run(),
 
             GenerateMap(state) => ui::visualize_map(ctx, &mut self.world, state),

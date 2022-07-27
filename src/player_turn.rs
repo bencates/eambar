@@ -1,7 +1,4 @@
-mod movement;
-
-pub use movement::*;
-
+use crate::game_mechanics::is_legal_move;
 use crate::prelude::*;
 
 /// Actions represent all of the possible this which consume a turn.
@@ -14,7 +11,10 @@ pub enum ActionError {
     MovementBlocked,
 }
 
-pub fn take_action(world: &mut World, entity: Entity, action: Action) -> Result<(), ActionError> {
+pub fn try_action(world: &mut World, action: Action) -> Result<(), ActionError> {
+    log::debug!("Player action: {:?}", action);
+
+    let player = *world.fetch::<Entity>();
     let mut intents = Intents::fetch(&world);
 
     match action {
@@ -22,31 +22,18 @@ pub fn take_action(world: &mut World, entity: Entity, action: Action) -> Result<
             let map = world.fetch::<Map>();
             let coordinates = world.read_component::<Coordinate>();
 
-            if let Some(coord) = coordinates.get(entity) {
+            if let Some(coord) = coordinates.get(player) {
                 let dest = *coord + direction;
 
-                if map[(dest).into()].is_blocked() {
+                if !is_legal_move(&map, dest) {
                     log::debug!("Movement blocked");
                     return Err(ActionError::MovementBlocked);
                 }
 
-                intents.wants_to_move(entity, dest);
+                intents.wants_to_move(player, dest);
             }
 
             Ok(())
         }
-    }
-}
-
-#[derive(SystemData)]
-pub struct Intents<'a> {
-    wants_to_move: WriteStorage<'a, WantsToMove>,
-}
-
-impl<'a> Intents<'a> {
-    pub fn wants_to_move(&mut self, entity: Entity, dest: Coordinate) {
-        self.wants_to_move
-            .insert(entity, WantsToMove(dest))
-            .expect("could not queue move intent");
     }
 }

@@ -1,5 +1,5 @@
 use super::tile::Tile;
-use crate::prelude::*;
+use crate::{game_mechanics::is_legal_move, prelude::*};
 use std::ops::{Index, IndexMut};
 
 pub struct Map {
@@ -49,7 +49,7 @@ impl Map {
         })
     }
 
-    fn in_bounds(&self, coord: Coordinate) -> bool {
+    pub fn in_bounds(&self, coord: Coordinate) -> bool {
         let Point { x, y } = coord.into();
 
         x < self.width && y < self.height
@@ -77,7 +77,7 @@ impl BaseMap for Map {
             .neighbors()
             .into_iter()
             .filter_map(|potential_exit| {
-                (self.in_bounds(potential_exit) && !self[potential_exit].is_blocked())
+                is_legal_move(self, potential_exit)
                     .then(|| (potential_exit.to_index(self.width), 1.0))
             })
             .collect()
