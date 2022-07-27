@@ -1,6 +1,11 @@
 use crate::{
-    action::take_action, ai::MonsterAI, field_of_view::VisibilitySystem, level::build_level,
-    map::IndexMapSystem, prelude::*, ui,
+    action::{take_action, MovementSystem},
+    ai::MonsterAI,
+    field_of_view::VisibilitySystem,
+    level::build_level,
+    map::IndexMapSystem,
+    prelude::*,
+    ui,
 };
 use RunState::*;
 
@@ -60,8 +65,9 @@ impl GameEngine {
 
         let mut dispatcher = DispatcherBuilder::new()
             .with(MonsterAI, "monster_ai", &[])
-            .with(VisibilitySystem, "visibility", &["monster_ai"])
-            .with(IndexMapSystem, "index_map", &["visibility"])
+            .with(MovementSystem, "movement", &["monster_ai"])
+            .with(VisibilitySystem, "visibility", &["movement"])
+            .with(IndexMapSystem, "index_map", &["movement", "visibility"])
             .build();
 
         dispatcher.setup(&mut world);
