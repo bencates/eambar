@@ -1,45 +1,26 @@
+use super::{map, TERM_HEIGHT, TERM_WIDTH};
+use crate::map::{MapBuilder, SimpleMapBuilder};
 use crate::prelude::*;
 
-pub fn visualize_map(ctx: &mut BTerm, map: &Map) {
-    ctx.cls();
-    ctx.set_active_console(1);
-    ctx.cls();
+#[derive(Clone, Copy, PartialEq)]
+pub enum MapVisualizerState {
+    Setup,
+    Idle,
+}
 
-    let map_dimensions = map.dimensions();
-
-    let rotation = Radians::new(0.0);
-    let scale = PointF::new(1.0, 1.0);
-
-    for x in 0..map_dimensions.x {
-        for y in 0..map_dimensions.y {
-            let map_coord: Coordinate = Point::new(x, y).into();
-
-            if let Ok(appearance) = Appearance::try_from(&map[map_coord]) {
-                let mut pos = PointF::new(x as f32, y as f32);
-
-                if x & 1 != 0 {
-                    pos.y += 0.5;
-                }
-
-                log::trace!(
-                    "Printing '{}' to {:?}, color {:?}",
-                    appearance.glyph,
-                    pos,
-                    appearance.color
-                );
-
-                ctx.set_fancy(
-                    pos,
-                    0,
-                    rotation,
-                    scale,
-                    appearance.color.fg,
-                    appearance.color.bg,
-                    to_cp437(appearance.glyph),
-                );
-            }
-        }
+pub fn visualize_map(ctx: &mut BTerm, world: &mut World, state: MapVisualizerState) -> RunState {
+    if state == MapVisualizerState::Setup {
+        let mut map = SimpleMapBuilder::new(TERM_WIDTH, TERM_HEIGHT).build();
+        map.reveal();
+        world.insert(map);
     }
 
-    ctx.set_active_console(0);
+    ctx.cls();
+    map::draw(ctx, world);
+
+    if ctx.key == Some(VirtualKeyCode::Q) {
+        ctx.quit();
+    }
+
+    RunState::GenerateMap(MapVisualizerState::Idle)
 }

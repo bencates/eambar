@@ -1,4 +1,4 @@
-use super::{TERM_HEIGHT, TERM_WIDTH};
+use super::{MapVisualizerState, TERM_HEIGHT, TERM_WIDTH};
 use crate::prelude::*;
 
 /// Render the main menu
@@ -21,7 +21,7 @@ pub fn main_menu(ctx: &mut BTerm) -> RunState {
         VirtualKeyCode::M => {
             log::info!("Generating a map");
 
-            RunState::GenerateMap
+            RunState::GenerateMap(MapVisualizerState::Setup)
         }
         VirtualKeyCode::Q => {
             log::info!("Quitting");

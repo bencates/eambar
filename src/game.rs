@@ -4,7 +4,7 @@ use crate::{
     action::take_action,
     field_of_view::VisibilitySystem,
     level::build_level,
-    map::{IndexMapSystem, MapBuilder, SimpleMapBuilder},
+    map::IndexMapSystem,
 };
 
 #[derive(Clone, Copy, PartialEq)]
@@ -18,8 +18,7 @@ pub enum RunState {
     Running,
 
     /// Development affordances
-    GenerateMap,
-    Idle,
+    GenerateMap(ui::MapVisualizerState),
 }
 
 pub struct State {
@@ -59,21 +58,7 @@ impl GameState for State {
                 RunState::AwaitingInput
             }
 
-            RunState::GenerateMap => {
-                let mut map = SimpleMapBuilder::new(ui::TERM_WIDTH, ui::TERM_HEIGHT).build();
-                map.reveal();
-
-                ui::visualize_map(ctx, &map);
-
-                RunState::Idle
-            }
-            RunState::Idle => {
-                if ctx.key == Some(VirtualKeyCode::Q) {
-                    ctx.quit();
-                }
-
-                RunState::Idle
-            }
+            RunState::GenerateMap(state) => ui::visualize_map(ctx, &mut self.world, state),
         };
 
         self.world.insert(next_run_state);

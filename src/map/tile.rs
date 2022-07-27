@@ -47,9 +47,9 @@ impl Tile {
         self.blocked
     }
 
-    // pub fn is_visible(&self) -> bool {
-    //     self.visible
-    // }
+    pub fn is_visible(&self) -> bool {
+        self.visible
+    }
 
     // pub fn contents(&self) -> &[Entity] {
     //     &self.contents
@@ -92,10 +92,14 @@ impl TryFrom<&Tile> for Appearance {
             return Err(());
         }
 
-        let (color, glyph) = match tile.tile_type {
+        let (mut color, glyph) = match tile.tile_type {
             TileType::Floor => (ColorPair::new(TEAL, BLACK), '.'),
             TileType::Wall => (ColorPair::new(GREEN, BLACK), '#'),
         };
+
+        if !tile.visible {
+            color.fg = color.fg.to_greyscale();
+        }
 
         Ok(Self { color, glyph })
     }

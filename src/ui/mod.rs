@@ -5,7 +5,7 @@ mod map_visualizer;
 use crate::prelude::*;
 
 pub use main_menu::main_menu;
-pub use map_visualizer::visualize_map;
+pub use map_visualizer::*;
 
 pub const TERM_WIDTH: i32 = 80;
 pub const TERM_HEIGHT: i32 = 50;
