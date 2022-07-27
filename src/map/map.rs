@@ -36,23 +36,19 @@ impl Map {
     }
 }
 
-impl Index<Point> for Map {
+impl Index<Coordinate> for Map {
     type Output = Tile;
 
-    fn index(&self, pos: Point) -> &Self::Output {
-        &self.tiles[pos.to_index(self.width)]
+    fn index(&self, coord: Coordinate) -> &Self::Output {
+        &self.tiles[coord.to_index(self.width)]
     }
 }
 
-impl IndexMut<Point> for Map {
-    fn index_mut(&mut self, pos: Point) -> &mut Self::Output {
-        let idx = pos.to_index(self.width);
+impl IndexMut<Coordinate> for Map {
+    fn index_mut(&mut self, coord: Coordinate) -> &mut Self::Output {
+        let idx = coord.to_index(self.width);
         &mut self.tiles[idx]
     }
 }
 
-impl BaseMap for Map {
-    fn is_opaque(&self, idx: usize) -> bool {
-        self.tiles[idx].is_opaque()
-    }
-}
+impl BaseMap for Map {}

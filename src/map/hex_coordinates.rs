@@ -21,6 +21,20 @@ pub struct Coordinate {
     pub r: i32,
 }
 
+impl Coordinate {
+    pub fn from_index(idx: usize, width: i32) -> Self {
+        let w: usize = width
+            .try_into()
+            .expect("Not a valid usize. Did something go negative?");
+
+        Point::new(idx % w, idx / w).into()
+    }
+
+    pub fn to_index(self, width: impl TryInto<usize>) -> usize {
+        Point::from(self).to_index(width)
+    }
+}
+
 impl From<Coordinate> for Point {
     fn from(Coordinate { q, r }: Coordinate) -> Self {
         Self {

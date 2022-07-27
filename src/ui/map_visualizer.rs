@@ -12,9 +12,9 @@ pub fn visualize_map(ctx: &mut BTerm, map: &Map) {
 
     for x in 0..map_dimensions.x {
         for y in 0..map_dimensions.y {
-            let map_pos = Point::new(x, y);
+            let map_coord: Coordinate = Point::new(x, y).into();
 
-            if let Ok(appearance) = Appearance::try_from(&map[map_pos]) {
+            if let Ok(appearance) = Appearance::try_from(&map[map_coord]) {
                 let mut pos = PointF::new(x as f32, y as f32);
 
                 if x & 1 != 0 {

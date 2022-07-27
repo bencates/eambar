@@ -24,13 +24,11 @@ impl<'a> System<'a> for IndexMapSystem {
         map.tiles.iter_mut().for_each(|tile| tile.reset_index());
 
         for (entity, coord) in (&entities, &coordinates).join() {
-            let pos = Point::from(*coord);
-
             // if blockers.contains(entity) {
-            //     map[pos].block();
+            //     map[*coord].block();
             // }
 
-            map[pos].add_entity(entity);
+            map[*coord].add_entity(entity);
         }
 
         for (_, vs) in (&players, &viewsheds).join() {

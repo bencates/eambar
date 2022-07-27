@@ -20,10 +20,9 @@ pub(super) fn draw(ctx: &mut BTerm, world: &World) {
 
     for x in 0..map_dimensions.x {
         for y in 0..map_dimensions.y {
-            let map_pos = Point::new(x, y);
-            let map_coord = Coordinate::from(map_pos);
+            let map_coord: Coordinate = Point::new(x, y).into();
 
-            if let Ok(appearance) = Appearance::try_from(&map[map_pos]) {
+            if let Ok(appearance) = Appearance::try_from(&map[map_coord]) {
                 log::trace!(
                     "Printing '{}' to {:?}, color {:?}",
                     appearance.glyph,
