@@ -39,12 +39,12 @@ fn handle_input(ctx: &BTerm) -> RunState {
 
     ctx.key.map_or(AwaitingInput, |key| match key {
         // Movement keys
-        Q => PlayerAction(Move(NorthWest)),
-        W => PlayerAction(Move(North)),
+        W => PlayerAction(Move(NorthWest)),
         E => PlayerAction(Move(NorthEast)),
-        A => PlayerAction(Move(SouthWest)),
-        S => PlayerAction(Move(South)),
-        D => PlayerAction(Move(SouthEast)),
+        A => PlayerAction(Move(West)),
+        D => PlayerAction(Move(East)),
+        Z => PlayerAction(Move(SouthWest)),
+        X => PlayerAction(Move(SouthEast)),
 
         _ => AwaitingInput,
     })

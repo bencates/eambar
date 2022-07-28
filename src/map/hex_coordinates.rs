@@ -11,11 +11,11 @@ use Direction::*;
 ///
 /// See https://www.redblobgames.com/grids/hexagons/ for more details.
 ///
-///   +s_____-r
-///    /     \
-/// -q<       > +q
-///    \_____/
-///   +r     -s
+///    -r +q
+///     | /
+///     *
+///   / |
+/// -q +r
 #[derive(Clone, Copy, Component, Debug, Hash, PartialEq, Eq)]
 pub struct Coordinate {
     pub q: i32,
@@ -37,11 +37,11 @@ impl Coordinate {
 
     pub fn neighbors(self) -> [Self; 6] {
         [
-            self + North,
             self + NorthEast,
+            self + East,
             self + SouthEast,
-            self + South,
             self + SouthWest,
+            self + West,
             self + NorthWest,
         ]
     }
@@ -54,8 +54,8 @@ impl Coordinate {
 impl From<Coordinate> for Point {
     fn from(Coordinate { q, r }: Coordinate) -> Self {
         Self {
-            x: q,
-            y: r + (q - (q & 1)) / 2,
+            x: q + (r - (r & 1)) / 2,
+            y: r,
         }
     }
 }
@@ -63,8 +63,8 @@ impl From<Coordinate> for Point {
 impl From<Point> for Coordinate {
     fn from(Point { x, y }: Point) -> Self {
         Self {
-            q: x,
-            r: y - (x - (x & 1)) / 2,
+            q: x - (y - (y & 1)) / 2,
+            r: y,
         }
     }
 }
@@ -87,20 +87,20 @@ impl From<Coordinate> for PointF {
     fn from(coord: Coordinate) -> Self {
         let Point { x, y } = coord.into();
 
-        let y = if x & 1 != 0 { y as f32 + 0.5 } else { y as f32 };
+        let x = if y & 1 != 0 { x as f32 + 0.5 } else { x as f32 };
 
-        Self { x: x as f32, y }
+        Self { x, y: y as f32 }
     }
 }
 
 /// The six cardinal directions on our hex grid
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Direction {
-    North,
     NorthEast,
+    East,
     SouthEast,
-    South,
     SouthWest,
+    West,
     NorthWest,
 }
 
@@ -109,19 +109,15 @@ impl Add<Direction> for Coordinate {
 
     fn add(self, direction: Direction) -> Self::Output {
         match direction {
-            North => Coordinate {
-                q: self.q,
-                r: self.r - 1,
-            },
             NorthEast => Coordinate {
                 q: self.q + 1,
                 r: self.r - 1,
             },
-            SouthEast => Coordinate {
+            East => Coordinate {
                 q: self.q + 1,
                 r: self.r,
             },
-            South => Coordinate {
+            SouthEast => Coordinate {
                 q: self.q,
                 r: self.r + 1,
             },
@@ -129,57 +125,14 @@ impl Add<Direction> for Coordinate {
                 q: self.q - 1,
                 r: self.r + 1,
             },
-            NorthWest => Coordinate {
+            West => Coordinate {
                 q: self.q - 1,
                 r: self.r,
             },
+            NorthWest => Coordinate {
+                q: self.q,
+                r: self.r - 1,
+            },
         }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    // Points in odd-q layout.
-    const CLOCK_DIRECTIONS: [(Coordinate, Point); 12] = [
-        (Coordinate { q: 0, r: -2 }, Point { x: 0, y: -2 }), // 12:00
-        (Coordinate { q: 1, r: -2 }, Point { x: 1, y: -2 }), // 1:00
-        (Coordinate { q: 2, r: -2 }, Point { x: 2, y: -1 }), // 2:00
-        (Coordinate { q: 2, r: -1 }, Point { x: 2, y: 0 }),  // 3:00
-        (Coordinate { q: 2, r: 0 }, Point { x: 2, y: 1 }),   // 4:00
-        (Coordinate { q: 1, r: 1 }, Point { x: 1, y: 1 }),   // 5:00
-        (Coordinate { q: 0, r: 2 }, Point { x: 0, y: 2 }),   // 6:00
-        (Coordinate { q: -1, r: 2 }, Point { x: -1, y: 1 }), // 7:00
-        (Coordinate { q: -2, r: 2 }, Point { x: -2, y: 1 }), // 8:00
-        (Coordinate { q: -2, r: 1 }, Point { x: -2, y: 0 }), // 9:00
-        (Coordinate { q: -2, r: 0 }, Point { x: -2, y: -1 }), // 10:00
-        (Coordinate { q: -1, r: -1 }, Point { x: -1, y: -2 }), // 11:00
-    ];
-
-    #[test]
-    fn test_converts_coordinates_to_points() {
-        for (coordinate, point) in CLOCK_DIRECTIONS {
-            assert_eq!(Point::from(coordinate), point);
-        }
-    }
-
-    #[test]
-    fn test_converts_points_to_coordinates() {
-        for (coordinate, point) in CLOCK_DIRECTIONS {
-            assert_eq!(Coordinate::from(point), coordinate);
-        }
-    }
-
-    #[test]
-    fn test_adding_directions() {
-        let origin = Coordinate { q: 0, r: 0 };
-
-        assert_eq!(origin + North, Coordinate { q: 0, r: -1 });
-        assert_eq!(origin + NorthEast, Coordinate { q: 1, r: -1 });
-        assert_eq!(origin + SouthEast, Coordinate { q: 1, r: 0 });
-        assert_eq!(origin + South, Coordinate { q: 0, r: 1 });
-        assert_eq!(origin + SouthWest, Coordinate { q: -1, r: 1 });
-        assert_eq!(origin + NorthWest, Coordinate { q: -1, r: 0 });
     }
 }
