@@ -1,6 +1,8 @@
+mod character_sheet;
 mod field_of_view;
 mod movement;
 
+pub use character_sheet::*;
 pub use field_of_view::*;
 pub use movement::*;
 

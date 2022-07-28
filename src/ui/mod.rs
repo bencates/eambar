@@ -3,12 +3,28 @@ mod map;
 mod map_visualizer;
 
 use crate::prelude::*;
+use std::fmt::{self, Display};
 
 pub use main_menu::main_menu;
 pub use map_visualizer::*;
 
 pub const TERM_WIDTH: i32 = 80;
 pub const TERM_HEIGHT: i32 = 50;
+
+#[derive(Component)]
+pub struct Name(String);
+
+impl Name {
+    pub fn new(name: impl ToString) -> Self {
+        Self(name.to_string())
+    }
+}
+
+impl Display for Name {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
 
 #[derive(Component)]
 pub struct Appearance {

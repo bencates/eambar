@@ -1,6 +1,6 @@
 use crate::{
     ai::MonsterAI,
-    game_mechanics::{MovementSystem, VisibilitySystem},
+    game_mechanics::{MaintainCharacterSheetSystem, MovementSystem, VisibilitySystem},
     level::build_level,
     map::IndexMapSystem,
     player_turn::try_action,
@@ -61,12 +61,16 @@ impl GameEngine {
             .with(MonsterAI, "monster_ai", &[])
             .with(MovementSystem, "movement", &["monster_ai"])
             .with(VisibilitySystem, "visibility", &["movement"])
+            .with(
+                MaintainCharacterSheetSystem,
+                "maintain_character_sheet",
+                &[],
+            )
             .with(IndexMapSystem, "index_map", &["movement", "visibility"])
             .build();
 
         dispatcher.setup(&mut world);
         world.register::<Appearance>();
-        world.register::<Monster>();
 
         world.insert(RandomNumberGenerator::new());
         world.insert(MainMenu);

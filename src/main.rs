@@ -16,10 +16,10 @@ mod prelude {
     pub use crate::{
         engine::RunState,
         entity::{Monster, Player},
-        game_mechanics::{Intents, Viewshed},
+        game_mechanics::{CharacterSheet, Intents, Viewshed},
         map::{BlocksTile, Coordinate, Direction, Map},
         player_turn::Action,
-        ui::Appearance,
+        ui::{Appearance, Name},
     };
 }
 
