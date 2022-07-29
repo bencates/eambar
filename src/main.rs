@@ -19,7 +19,7 @@ mod prelude {
         game_mechanics::{CharacterSheet, Intents, Viewshed},
         map::{BlocksTile, Coordinate, Direction, Map},
         player_turn::Action,
-        ui::{Appearance, Name},
+        ui::{Appearance, GameLog, Name},
     };
 }
 

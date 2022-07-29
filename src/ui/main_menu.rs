@@ -1,4 +1,4 @@
-use super::{MapVisualizerState, TERM_HEIGHT, TERM_WIDTH};
+use super::{TERM_HEIGHT, TERM_WIDTH};
 use crate::prelude::*;
 
 /// Render the main menu

@@ -18,6 +18,10 @@ impl CharacterSheet {
         }
     }
 
+    pub fn hp(&self) -> (i32, i32) {
+        (self.hp, self.max_hp)
+    }
+
     pub fn is_alive(&self) -> bool {
         self.hp > 0
     }
@@ -43,19 +47,21 @@ impl<'a> System<'a> for MaintainCharacterSheetSystem {
         ReadStorage<'a, Player>,
         ReadStorage<'a, Name>,
         WriteStorage<'a, CharacterSheet>,
+        Write<'a, GameLog>,
     );
 
-    fn run(&mut self, (entities, players, names, mut character_sheets): Self::SystemData) {
+    fn run(
+        &mut self,
+        (entities, players, names, mut character_sheets, mut game_log): Self::SystemData,
+    ) {
         for (entity, name, character) in (&entities, &names, &mut character_sheets).join() {
             if !character.is_alive() {
                 if players.contains(entity) {
                     // TODO: handle player death
-                    // TODO: log to game_log
-                    log::warn!("You died!");
+                    game_log.player_death();
                     character.hp = character.max_hp;
                 } else {
-                    // TODO: log to game_log
-                    log::info!("{name} died");
+                    game_log.death(name);
 
                     // // Removing the position clears the entity off the map immediately.
                     // // All other components will be removed automatically after the turn.

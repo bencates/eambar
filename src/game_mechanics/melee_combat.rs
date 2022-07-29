@@ -14,17 +14,12 @@ impl<'a> System<'a> for MeleeCombatSystem {
         ReadStorage<'a, Name>,
         WriteStorage<'a, CharacterSheet>,
         WriteStorage<'a, WantsToMelee>,
-        // WriteExpect<'a, GameLog>
+        Write<'a, GameLog>,
     );
 
     fn run(
         &mut self,
-        (
-            names,
-            mut character_sheets,
-            mut melee_intents,
-            // mut game_log,
-        ): Self::SystemData,
+        (names, mut character_sheets, mut melee_intents, mut game_log): Self::SystemData,
     ) {
         let mut damage_taken = ChangeSet::new();
 
@@ -45,13 +40,10 @@ impl<'a> System<'a> for MeleeCombatSystem {
             let raw_damage = attacker.melee_damage();
             let damage = target.block_damage(raw_damage);
 
+            game_log.attack(attacker_name, target_name, damage);
+
             if damage > 0 {
-                // TODO: log to game_log
-                log::info!("{attacker_name} hits {target_name} for {damage} damage");
                 damage_taken.add(target_entity, damage);
-            } else {
-                // TODO: log to game_log
-                log::info!("{attacker_name} is unable to hurt {target_name}.");
             }
         }
 

@@ -1,11 +1,14 @@
+mod game_log;
 mod layout;
 mod main_menu;
 mod map;
 mod map_visualizer;
+mod sidebar;
 
 use crate::prelude::*;
 use std::fmt::{self, Display};
 
+pub use game_log::GameLog;
 pub use main_menu::main_menu;
 pub use map_visualizer::*;
 
@@ -14,6 +17,8 @@ pub const TERM_HEIGHT: i32 = 60;
 
 pub const MAP_WIDTH: i32 = 50;
 pub const MAP_HEIGHT: i32 = 48;
+
+const SIDEBAR_WIDTH: i32 = TERM_WIDTH - MAP_WIDTH - 2;
 
 #[derive(Component)]
 pub struct Name(String);
@@ -51,6 +56,8 @@ pub fn frame(ctx: &mut BTerm, world: &World) -> RunState {
 
     layout::draw(ctx, world);
     map::draw(ctx, world);
+    sidebar::draw(ctx, world);
+    game_log::draw(ctx, world);
 
     handle_input(ctx)
 }

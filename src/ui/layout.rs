@@ -1,7 +1,5 @@
-use super::{MAP_HEIGHT, MAP_WIDTH, TERM_HEIGHT, TERM_WIDTH};
+use super::{MAP_HEIGHT, SIDEBAR_WIDTH, TERM_HEIGHT, TERM_WIDTH};
 use crate::prelude::*;
-
-const SIDEBAR_WIDTH: i32 = TERM_WIDTH - MAP_WIDTH - 2;
 
 pub(super) fn draw(ctx: &mut BTerm, _world: &World) {
     ctx.draw_box(0, 0, TERM_WIDTH - 1, TERM_HEIGHT - 1, WHITE, BLACK);
@@ -15,7 +13,6 @@ pub(super) fn draw(ctx: &mut BTerm, _world: &World) {
         BLACK,
     );
     ctx.draw_box(0, 0, SIDEBAR_WIDTH, 6, WHITE, BLACK);
-    // ctx.print(0, 6, "├──────────────────┤");
 
     // Clean up the intersections
     ctx.print(SIDEBAR_WIDTH, 0, "┬");
