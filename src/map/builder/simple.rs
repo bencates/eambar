@@ -23,7 +23,8 @@ impl SimpleMapBuilder {
             map.tiles[pos.to_index(width)] = Tile::floor();
         }
 
-        map.rooms = rooms;
+        map.spawn_points
+            .extend(rooms.iter().map(|room| Coordinate::from(room.center())));
 
         Self { map }
     }

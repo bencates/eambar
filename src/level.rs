@@ -9,7 +9,7 @@ pub fn build_level(world: &mut World) {
     let map = SimpleMapBuilder::new(MAP_WIDTH, MAP_HEIGHT).build();
 
     {
-        let mut spawn_points = map.spawn_points();
+        let mut spawn_points = map.spawn_points().iter().copied();
 
         if let Some(coord) = spawn_points.next() {
             log::debug!("Spawning player at {coord:?}");

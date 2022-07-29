@@ -5,7 +5,7 @@ use std::ops::{Index, IndexMut};
 pub struct Map {
     /// Tiles are stored as an "odd-q" rectangle in row-major order
     pub(super) tiles: Vec<Tile>,
-    pub rooms: Vec<Rect>,
+    pub(super) spawn_points: Vec<Coordinate>,
     width: i32,
     height: i32,
 }
@@ -13,18 +13,18 @@ pub struct Map {
 impl Map {
     pub(super) fn new(width: i32, height: i32) -> Self {
         let tiles: Vec<Tile> = (0..(width * height)).map(|_| Tile::wall()).collect();
-        let rooms = Vec::new();
+        let spawn_points = Vec::new();
 
         Self {
             tiles,
-            rooms,
+            spawn_points,
             width,
             height,
         }
     }
 
-    pub fn spawn_points(&self) -> impl Iterator<Item = Coordinate> + '_ {
-        self.rooms.iter().map(|room| room.center().into())
+    pub fn spawn_points(&self) -> &[Coordinate] {
+        &self.spawn_points
     }
 
     pub fn dimensions(&self) -> Point {
