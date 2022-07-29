@@ -55,14 +55,12 @@ impl Tile {
     //     &self.contents
     // }
 
-    // pub fn entity<T: Component>(&self, world: &World) -> Option<Entity> {
-    //     let storage = world.read_component::<T>();
-
-    //     self.contents
-    //         .iter()
-    //         .find(|entity| storage.contains(**entity))
-    //         .copied()
-    // }
+    pub fn entity<T: Component>(&self, storage: &ReadStorage<T>) -> Option<Entity> {
+        self.contents
+            .iter()
+            .copied()
+            .find(|&entity| storage.contains(entity))
+    }
 
     pub(super) fn reset_index(&mut self) {
         self.blocked = self.tile_type == TileType::Wall;

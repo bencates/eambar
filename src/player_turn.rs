@@ -21,16 +21,21 @@ pub fn try_action(world: &mut World, action: Action) -> Result<(), ActionError> 
         Action::Move(direction) => {
             let map = world.fetch::<Map>();
             let coordinates = world.read_component::<Coordinate>();
+            let character_sheets = world.read_component::<CharacterSheet>();
 
             if let Some(coord) = coordinates.get(player) {
                 let dest = *coord + direction;
 
-                if !is_legal_move(&map, dest) {
-                    log::debug!("Movement blocked");
-                    return Err(ActionError::MovementBlocked);
-                }
+                if let Some(target) = map[dest].entity(&character_sheets) {
+                    intents.wants_to_melee(player, target);
+                } else {
+                    if !is_legal_move(&map, dest) {
+                        log::debug!("Movement blocked");
+                        return Err(ActionError::MovementBlocked);
+                    }
 
-                intents.wants_to_move(player, dest);
+                    intents.wants_to_move(player, dest);
+                }
             }
 
             Ok(())

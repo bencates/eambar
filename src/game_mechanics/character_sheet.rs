@@ -21,6 +21,14 @@ impl CharacterSheet {
     pub fn is_alive(&self) -> bool {
         self.hp > 0
     }
+
+    pub fn melee_damage(&self) -> i32 {
+        self.power
+    }
+
+    pub fn block_damage(&self, raw_damage: i32) -> i32 {
+        i32::max(0, raw_damage - self.defense)
+    }
 }
 
 pub struct MaintainCharacterSheetSystem;
@@ -38,9 +46,11 @@ impl<'a> System<'a> for MaintainCharacterSheetSystem {
             if !character.is_alive() {
                 if players.contains(entity) {
                     // TODO: handle player death
+                    // TODO: log to game_log
                     log::warn!("You died!");
                     character.hp = character.max_hp;
                 } else {
+                    // TODO: log to game_log
                     log::info!("{name} died");
 
                     // // Removing the position clears the entity off the map immediately.

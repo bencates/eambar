@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{game_mechanics::in_melee_range, prelude::*};
 
 pub struct MonsterAI;
 
@@ -19,16 +19,14 @@ impl<'a> System<'a> for MonsterAI {
     ) {
         let player_coord = *coordinates.get(*player).unwrap();
 
-        for (entity, _, coord, vs) in (&entities, &monsters, &coordinates, &viewsheds).join() {
+        for (entity, _, &coord, vs) in (&entities, &monsters, &coordinates, &viewsheds).join() {
             if !vs.is_visible(player_coord) {
                 continue;
             }
 
-            // if data.in_melee_range(monster) {
-            //     data.attack_player(monster);
-            // } else {
-
-            if let Some(path) = map.path(*coord, player_coord) {
+            if in_melee_range(coord, player_coord) {
+                intents.wants_to_melee(entity, *player);
+            } else if let Some(path) = map.path(coord, player_coord) {
                 if let Some(dest) = path.skip(1).next() {
                     intents.wants_to_move(entity, dest)
                 }

@@ -1,6 +1,8 @@
 use crate::{
     ai::MonsterAI,
-    game_mechanics::{MaintainCharacterSheetSystem, MovementSystem, VisibilitySystem},
+    game_mechanics::{
+        MaintainCharacterSheetSystem, MeleeCombatSystem, MovementSystem, VisibilitySystem,
+    },
     level::build_level,
     map::IndexMapSystem,
     player_turn::try_action,
@@ -60,6 +62,7 @@ impl GameEngine {
         let mut dispatcher = DispatcherBuilder::new()
             .with(MonsterAI, "monster_ai", &[])
             .with(MovementSystem, "movement", &["monster_ai"])
+            .with(MeleeCombatSystem, "melee_combat", &["monster_ai"])
             .with(VisibilitySystem, "visibility", &["movement"])
             .with(
                 MaintainCharacterSheetSystem,
