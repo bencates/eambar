@@ -1,7 +1,9 @@
+use super::{MAP_WIDTH, TERM_WIDTH};
 use crate::prelude::*;
 
 pub(super) fn draw(ctx: &mut BTerm, world: &World) {
     let map = world.fetch::<Map>();
+    let map_origin = PointF::new((TERM_WIDTH - MAP_WIDTH - 1) as f32, 1.75);
 
     let coordinates = world.read_component::<Coordinate>();
     let appearances = world.read_component::<Appearance>();
@@ -27,7 +29,7 @@ pub(super) fn draw(ctx: &mut BTerm, world: &World) {
                 );
 
                 ctx.set_fancy(
-                    map_coord.into(),
+                    map_origin + map_coord.into(),
                     0,
                     rotation,
                     scale,
@@ -39,10 +41,10 @@ pub(super) fn draw(ctx: &mut BTerm, world: &World) {
         }
     }
 
-    for (coord, appearance) in (&coordinates, &appearances).join() {
-        if map[*coord].is_visible() {
+    for (&coord, appearance) in (&coordinates, &appearances).join() {
+        if map[coord].is_visible() {
             ctx.set_fancy(
-                PointF::from(*coord),
+                map_origin + coord.into(),
                 1,
                 rotation,
                 scale,

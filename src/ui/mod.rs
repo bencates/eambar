@@ -1,3 +1,4 @@
+mod layout;
 mod main_menu;
 mod map;
 mod map_visualizer;
@@ -9,7 +10,10 @@ pub use main_menu::main_menu;
 pub use map_visualizer::*;
 
 pub const TERM_WIDTH: i32 = 80;
-pub const TERM_HEIGHT: i32 = 50;
+pub const TERM_HEIGHT: i32 = 60;
+
+pub const MAP_WIDTH: i32 = 50;
+pub const MAP_HEIGHT: i32 = 48;
 
 #[derive(Component)]
 pub struct Name(String);
@@ -35,8 +39,8 @@ pub struct Appearance {
 pub fn setup() -> BResult<BTerm> {
     log::debug!("Generating a {TERM_WIDTH}x{TERM_HEIGHT} console");
 
-    BTermBuilder::simple80x50()
-        .with_fancy_console(80, 50, "terminal8x8.png")
+    BTermBuilder::simple(TERM_WIDTH, TERM_HEIGHT)?
+        .with_fancy_console(TERM_WIDTH, TERM_HEIGHT, "terminal8x8.png")
         .with_title("Roguelike Tutorial")
         .with_vsync(false)
         .build()
@@ -45,6 +49,7 @@ pub fn setup() -> BResult<BTerm> {
 pub fn frame(ctx: &mut BTerm, world: &World) -> RunState {
     ctx.cls();
 
+    layout::draw(ctx, world);
     map::draw(ctx, world);
 
     handle_input(ctx)

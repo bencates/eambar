@@ -9,8 +9,8 @@ pub fn main_menu(ctx: &mut BTerm) -> RunState {
     ctx.draw_box(0, 0, TERM_WIDTH - 1, TERM_HEIGHT - 1, WHITE, BLACK);
 
     ctx.print_centered(TERM_HEIGHT / 2 - 1, "(N)ew Game");
-    ctx.print_centered(TERM_HEIGHT / 2, "Generate (M)ap");
-    ctx.print_centered(TERM_HEIGHT / 2 + 1, "(Q)uit");
+    // ctx.print_centered(TERM_HEIGHT / 2, "Generate (M)ap");
+    ctx.print_centered(TERM_HEIGHT / 2, "(Q)uit");
 
     ctx.key.map_or(RunState::MainMenu, |key| match key {
         VirtualKeyCode::N => {
@@ -18,11 +18,11 @@ pub fn main_menu(ctx: &mut BTerm) -> RunState {
 
             RunState::NewGame
         }
-        VirtualKeyCode::M => {
-            log::info!("Generating a map");
+        // VirtualKeyCode::M => {
+        //     log::info!("Generating a map");
 
-            RunState::GenerateMap(MapVisualizerState::Setup)
-        }
+        //     RunState::GenerateMap(MapVisualizerState::Setup)
+        // }
         VirtualKeyCode::Q => {
             log::info!("Quitting");
             ctx.quit();
