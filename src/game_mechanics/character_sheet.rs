@@ -29,6 +29,10 @@ impl CharacterSheet {
     pub fn block_damage(&self, raw_damage: i32) -> i32 {
         i32::max(0, raw_damage - self.defense)
     }
+
+    pub fn apply_damage(&mut self, damage: i32) {
+        self.hp -= damage;
+    }
 }
 
 pub struct MaintainCharacterSheetSystem;
