@@ -23,6 +23,10 @@ pub struct Coordinate {
 }
 
 impl Coordinate {
+    pub fn new(q: i32, r: i32) -> Self {
+        Self { q, r }
+    }
+
     pub fn from_index(idx: usize, width: i32) -> Self {
         let w: usize = width
             .try_into()

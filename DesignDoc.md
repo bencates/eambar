@@ -98,3 +98,40 @@ some percentage of the upgrade cost.
 - Bonus to melee damage ("upgrade servo motors")
 - Bonus to ranged damege ("upgrade targeting AI")
 - Additional mod slots
+
+### Ship
+
+"Office tower" style ship, hexagonal cross-section.
+
+Each floor is a hexagon of radius 25. Floors are 4m tall, hexes are 1m.
+
+30: Shuttles
+29:
+28:
+27:
+26:
+25: Research Lab
+24:
+23:
+22:
+21:
+20: Command Deck
+19:
+18:
+17:
+16:
+15:
+14:
+13:
+12:
+11:
+10: Reactor
+09: Reactor
+08: Reactor
+07: Engines
+06: Engines
+05: Engines
+04: Engines
+03: Engines
+02: Engines
+01: Engines

@@ -1,4 +1,4 @@
-use crate::map::{MapBuilder, SimpleMapBuilder};
+use crate::map;
 use crate::ui::{MAP_HEIGHT, MAP_WIDTH};
 use crate::{
     entity::{monster, player},
@@ -6,7 +6,7 @@ use crate::{
 };
 
 pub fn build_level(world: &mut World) {
-    let map = SimpleMapBuilder::new(MAP_WIDTH, MAP_HEIGHT).build();
+    let map = map::build_level(MAP_WIDTH, MAP_HEIGHT);
 
     {
         let mut spawn_points = map.spawn_points().iter().copied();

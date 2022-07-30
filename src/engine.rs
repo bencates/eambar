@@ -20,9 +20,8 @@ pub enum RunState {
     AwaitingInput,
     PlayerAction(Action),
     Running,
-
-    /// Development affordances
-    GenerateMap(ui::MapVisualizerState),
+    // /// Development affordances
+    // GenerateMap(ui::MapVisualizerState),
 }
 
 pub struct GameEngine {
@@ -47,8 +46,7 @@ impl GameState for GameEngine {
                 Err(_) => AwaitingInput,
             },
             Running => self.run(),
-
-            GenerateMap(state) => ui::visualize_map(ctx, &mut self.world, state),
+            // GenerateMap(state) => ui::visualize_map(ctx, &mut self.world, state),
         };
 
         self.world.insert(next_run_state);

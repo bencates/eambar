@@ -2,7 +2,7 @@ mod game_log;
 mod layout;
 mod main_menu;
 mod map;
-mod map_visualizer;
+// mod map_visualizer;
 mod sidebar;
 
 use crate::prelude::*;
@@ -10,13 +10,13 @@ use std::fmt::{self, Display};
 
 pub use game_log::GameLog;
 pub use main_menu::main_menu;
-pub use map_visualizer::*;
+// pub use map_visualizer::*;
 
 pub const TERM_WIDTH: i32 = 80;
 pub const TERM_HEIGHT: i32 = 60;
 
-pub const MAP_WIDTH: i32 = 50;
-pub const MAP_HEIGHT: i32 = 48;
+pub const MAP_WIDTH: i32 = 49;
+pub const MAP_HEIGHT: i32 = 49;
 
 const SIDEBAR_WIDTH: i32 = TERM_WIDTH - MAP_WIDTH - 2;
 
