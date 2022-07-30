@@ -52,7 +52,7 @@ impl Map {
     pub fn in_bounds(&self, coord: Coordinate) -> bool {
         let Point { x, y } = coord.into();
 
-        x < self.width && y < self.height
+        (0..self.width).contains(&x) && (0..self.height).contains(&y)
     }
 }
 

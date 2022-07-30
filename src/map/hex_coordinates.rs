@@ -53,6 +53,18 @@ impl Coordinate {
     pub fn distance(self, other: Self) -> i32 {
         Hex2dCoordinate::from(self).distance(other.into())
     }
+
+    pub fn range(self, radius: i32) -> impl Iterator<Item = Self> {
+        Hex2dCoordinate::from(self)
+            .range_iter(radius)
+            .map(|c| c.into())
+    }
+
+    pub fn line_to(self, other: Self) -> impl Iterator<Item = Self> {
+        Hex2dCoordinate::from(self)
+            .line_to_iter(other.into())
+            .map(|c| c.into())
+    }
 }
 
 impl From<Coordinate> for Point {

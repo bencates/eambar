@@ -6,33 +6,34 @@ use crate::{
 };
 
 pub fn build_level(world: &mut World) {
-    let map = map::build_level(MAP_WIDTH, MAP_HEIGHT);
-
-    {
-        let mut spawn_points = map.spawn_points().iter().copied();
-
-        if let Some(coord) = spawn_points.next() {
-            log::debug!("Spawning player at {coord:?}");
-
-            let player = player(world.create_entity()).with(coord).build();
-
-            world.insert(player);
-            // world.insert(pos);
-            // world.insert(Inventory::default());
-        }
-
-        for coord in spawn_points {
-            let builder = {
-                let rng = world.get_mut::<RandomNumberGenerator>().unwrap();
-
-                spawn_table(rng)
-            };
-
-            log::debug!("Spawning a monster at {coord:?}");
-
-            builder(world.create_entity()).with(coord).build();
-        }
+    let map = {
+        let mut rng = world.get_mut::<RandomNumberGenerator>().unwrap();
+        map::build_level(MAP_WIDTH, MAP_HEIGHT, &mut rng)
     };
+
+    let mut spawn_points = map.spawn_points().iter().copied();
+
+    if let Some(coord) = spawn_points.next() {
+        log::debug!("Spawning player at {coord:?}");
+
+        let player = player(world.create_entity()).with(coord).build();
+
+        world.insert(player);
+        // world.insert(pos);
+        // world.insert(Inventory::default());
+    }
+
+    for coord in spawn_points {
+        let builder = {
+            let rng = world.get_mut::<RandomNumberGenerator>().unwrap();
+
+            spawn_table(rng)
+        };
+
+        log::debug!("Spawning a monster at {coord:?}");
+
+        builder(world.create_entity()).with(coord).build();
+    }
 
     world.insert(map);
 }
