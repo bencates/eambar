@@ -1,10 +1,10 @@
-mod builder;
 mod hex_coordinates;
+mod level_builder;
 mod map;
 mod tile;
 
-pub use builder::*;
 pub use hex_coordinates::{Coordinate, Direction};
+pub use level_builder::DeckBuilder;
 pub use map::Map;
 
 use crate::prelude::*;

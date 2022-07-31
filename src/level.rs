@@ -1,4 +1,4 @@
-use crate::map;
+use crate::map::DeckBuilder;
 use crate::ui::{MAP_HEIGHT, MAP_WIDTH};
 use crate::{
     entity::{monster, player},
@@ -7,9 +7,15 @@ use crate::{
 
 pub fn build_level(world: &mut World) {
     let map = {
-        let mut rng = world.get_mut::<RandomNumberGenerator>().unwrap();
-        map::build_level(MAP_WIDTH, MAP_HEIGHT, &mut rng)
+        let rng = world.get_mut::<RandomNumberGenerator>().unwrap();
+
+        DeckBuilder::new(MAP_WIDTH, MAP_HEIGHT)
+            .with_engines()
+            .with_walls(rng)
+            .build()
     };
+
+    // map.reveal();
 
     let mut spawn_points = map.spawn_points().iter().copied();
 

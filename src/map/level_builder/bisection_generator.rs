@@ -1,63 +1,20 @@
-use super::tile::Tile;
+use super::super::tile::Tile;
 use crate::prelude::*;
 use Direction::*;
 
-pub fn build_level(width: i32, height: i32, rng: &mut RandomNumberGenerator) -> Map {
-    // let mut map = empty_deck_template(width, height);
-    let mut map = engine_deck_template(width, height);
-    map = with_walls(map, rng);
-
-    map
-}
-
-fn empty_deck_template(width: i32, height: i32) -> Map {
-    let mut map = Map::new(width, height);
-
-    let map_center = Coordinate::from(Point::new(width / 2, height / 2));
-    let radius = i32::min(width / 2, height / 2) - 1;
-
-    for c in map_center.range(radius) {
-        map[c] = Tile::floor();
-    }
-
-    map.spawn_points.push(map_center);
-
-    map
-}
-
-fn engine_deck_template(width: i32, height: i32) -> Map {
-    let mut map = empty_deck_template(width, height);
-    let map_center = map.spawn_points[0];
-
-    let half_radius = i32::min(width / 4, height / 4);
-
-    for coord in [
-        Coordinate::new(map_center.q - half_radius, map_center.r),
-        Coordinate::new(map_center.q + half_radius, map_center.r - half_radius),
-        Coordinate::new(map_center.q, map_center.r + half_radius),
-    ] {
-        for c in coord.range(8) {
-            map[c] = Tile::wall();
-        }
-    }
-
-    map
-}
-
 const MIN_ROOM_SIZE: i32 = 4;
-
 const Q_AXIS: (Direction, Direction) = (North, South);
 const R_AXIS: (Direction, Direction) = (NorthWest, SouthEast);
 const S_AXIS: (Direction, Direction) = (NorthEast, SouthWest);
 
-fn with_walls(mut map: Map, rng: &mut RandomNumberGenerator) -> Map {
+pub fn add_walls(map: &mut Map, rng: &mut RandomNumberGenerator) {
     let mut doors: Vec<Coordinate> = Vec::new();
     let mut done = (false, false, false);
 
     while !(done.0 && done.1 && done.2) {
         let paths = q_paths(&map);
         if let Some((c1, c2)) = paths.into_iter().max_by_key(|(c1, c2)| c1.distance(*c2)) {
-            match bisect_path(&mut map, c1, c2, &[R_AXIS, S_AXIS], rng) {
+            match bisect_path(map, c1, c2, &[R_AXIS, S_AXIS], rng) {
                 Some(c) => doors.push(c),
                 None => done.0 = true,
             };
@@ -65,7 +22,7 @@ fn with_walls(mut map: Map, rng: &mut RandomNumberGenerator) -> Map {
 
         let paths = r_paths(&map);
         if let Some((c1, c2)) = paths.into_iter().max_by_key(|(c1, c2)| c1.distance(*c2)) {
-            match bisect_path(&mut map, c1, c2, &[Q_AXIS, S_AXIS], rng) {
+            match bisect_path(map, c1, c2, &[Q_AXIS, S_AXIS], rng) {
                 Some(c) => doors.push(c),
                 None => done.1 = true,
             };
@@ -73,7 +30,7 @@ fn with_walls(mut map: Map, rng: &mut RandomNumberGenerator) -> Map {
 
         let paths = s_paths(&map);
         if let Some((c1, c2)) = paths.into_iter().max_by_key(|(c1, c2)| c1.distance(*c2)) {
-            match bisect_path(&mut map, c1, c2, &[Q_AXIS, R_AXIS], rng) {
+            match bisect_path(map, c1, c2, &[Q_AXIS, R_AXIS], rng) {
                 Some(c) => doors.push(c),
                 None => done.2 = true,
             };
@@ -83,8 +40,6 @@ fn with_walls(mut map: Map, rng: &mut RandomNumberGenerator) -> Map {
     for c in doors {
         map[c] = Tile::floor();
     }
-
-    map
 }
 
 fn q_paths(map: &Map) -> Vec<(Coordinate, Coordinate)> {
