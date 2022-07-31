@@ -19,7 +19,7 @@ pub fn player(entity: EntityBuilder) -> EntityBuilder {
             glyph: '@',
         })
         .with(CharacterSheet::new(30, 5, 2))
-        .with(Viewshed::new(8))
+        .with(Viewshed::new(25))
 }
 
 pub mod monster {
@@ -34,7 +34,7 @@ pub mod monster {
                 glyph: 'z',
             })
             .with(CharacterSheet::new(16, 4, 1))
-            .with(Viewshed::new(8))
+            .with(Viewshed::new(25))
             .with(BlocksTile)
     }
 
@@ -47,7 +47,7 @@ pub mod monster {
                 glyph: 'h',
             })
             .with(CharacterSheet::new(16, 4, 1))
-            .with(Viewshed::new(8))
+            .with(Viewshed::new(25))
             .with(BlocksTile)
     }
 }

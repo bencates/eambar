@@ -11,19 +11,13 @@ pub fn build_level(width: i32, height: i32, rng: &mut RandomNumberGenerator) -> 
 }
 
 fn empty_deck_template(width: i32, height: i32) -> Map {
-    let radius = i32::min(width / 2, height / 2);
-
     let mut map = Map::new(width, height);
 
-    let map_center = Coordinate::from(Point::new(radius, radius));
+    let map_center = Coordinate::from(Point::new(width / 2, height / 2));
+    let radius = i32::min(width / 2, height / 2) - 1;
 
-    for x in 0..width {
-        for y in 0..height {
-            let pos = Point::new(x, y);
-            if Coordinate::from(pos).distance(map_center) < radius {
-                map.tiles[pos.to_index(49)] = Tile::floor();
-            }
-        }
+    for c in map_center.range(radius) {
+        map[c] = Tile::floor();
     }
 
     map.spawn_points.push(map_center);
@@ -57,8 +51,6 @@ const R_AXIS: (Direction, Direction) = (NorthWest, SouthEast);
 const S_AXIS: (Direction, Direction) = (NorthEast, SouthWest);
 
 fn with_walls(mut map: Map, rng: &mut RandomNumberGenerator) -> Map {
-    // let mut map = engine_deck_template(width, height, rng);
-
     let mut doors: Vec<Coordinate> = Vec::new();
     let mut done = (false, false, false);
 

@@ -124,31 +124,14 @@ impl Add<Direction> for Coordinate {
     type Output = Coordinate;
 
     fn add(self, direction: Direction) -> Self::Output {
+        let Self { q, r } = self;
         match direction {
-            North => Coordinate {
-                q: self.q,
-                r: self.r - 1,
-            },
-            NorthEast => Coordinate {
-                q: self.q + 1,
-                r: self.r - 1,
-            },
-            SouthEast => Coordinate {
-                q: self.q + 1,
-                r: self.r,
-            },
-            South => Coordinate {
-                q: self.q,
-                r: self.r + 1,
-            },
-            SouthWest => Coordinate {
-                q: self.q - 1,
-                r: self.r + 1,
-            },
-            NorthWest => Coordinate {
-                q: self.q - 1,
-                r: self.r,
-            },
+            North => Coordinate { q, r: r - 1 },
+            NorthEast => Coordinate { q: q + 1, r: r - 1 },
+            SouthEast => Coordinate { q: q + 1, r },
+            South => Coordinate { q, r: r + 1 },
+            SouthWest => Coordinate { q: q - 1, r: r + 1 },
+            NorthWest => Coordinate { q: q - 1, r },
         }
     }
 }
