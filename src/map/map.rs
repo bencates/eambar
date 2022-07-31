@@ -31,6 +31,10 @@ impl Map {
         Point::new(self.width, self.height)
     }
 
+    pub fn iter(&self) -> impl Iterator<Item = Coordinate> + '_ {
+        (0..self.tiles.len()).map(|idx| Coordinate::from_index(idx, self.width))
+    }
+
     pub fn reveal(&mut self) {
         self.tiles.iter_mut().for_each(|tile| tile.reveal());
     }
