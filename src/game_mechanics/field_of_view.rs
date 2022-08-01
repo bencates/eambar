@@ -56,7 +56,7 @@ impl<'a> System<'a> for VisibilitySystem {
                         vs.visible_tiles.insert(c1);
                         vs.visible_tiles.insert(c2);
 
-                        if map[c1.into()].is_opaque() && map[c2.into()].is_opaque() {
+                        if map[c1].is_opaque() && map[c2].is_opaque() {
                             break;
                         }
                     }

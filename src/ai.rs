@@ -26,10 +26,8 @@ impl<'a> System<'a> for MonsterAI {
 
             if in_melee_range(coord, player_coord) {
                 intents.wants_to_melee(entity, *player);
-            } else if let Some(path) = map.path(coord, player_coord) {
-                if let Some(dest) = path.skip(1).next() {
-                    intents.wants_to_move(entity, dest)
-                }
+            } else if let Some(dest) = map.path(coord, player_coord).and_then(|mut p| p.nth(1)) {
+                intents.wants_to_move(entity, dest)
             }
         }
     }

@@ -12,7 +12,7 @@ pub fn add_walls(map: &mut Map, rng: &mut RandomNumberGenerator) {
     let mut done = (false, false, false);
 
     while !(done.0 && done.1 && done.2) {
-        let paths = q_paths(&map);
+        let paths = q_paths(map);
         if let Some((c1, c2)) = paths.into_iter().max_by_key(|(c1, c2)| c1.distance(*c2)) {
             match bisect_path(map, c1, c2, &[R_AXIS, S_AXIS], rng) {
                 Some(c) => doors.push(c),
@@ -20,7 +20,7 @@ pub fn add_walls(map: &mut Map, rng: &mut RandomNumberGenerator) {
             };
         }
 
-        let paths = r_paths(&map);
+        let paths = r_paths(map);
         if let Some((c1, c2)) = paths.into_iter().max_by_key(|(c1, c2)| c1.distance(*c2)) {
             match bisect_path(map, c1, c2, &[Q_AXIS, S_AXIS], rng) {
                 Some(c) => doors.push(c),
@@ -28,7 +28,7 @@ pub fn add_walls(map: &mut Map, rng: &mut RandomNumberGenerator) {
             };
         }
 
-        let paths = s_paths(&map);
+        let paths = s_paths(map);
         if let Some((c1, c2)) = paths.into_iter().max_by_key(|(c1, c2)| c1.distance(*c2)) {
             match bisect_path(map, c1, c2, &[Q_AXIS, R_AXIS], rng) {
                 Some(c) => doors.push(c),
@@ -117,7 +117,7 @@ fn bisect_path(
     if distance > MIN_ROOM_SIZE * 2 {
         let offset = rng.range(MIN_ROOM_SIZE, distance - MIN_ROOM_SIZE);
 
-        if let Some(c) = c1.line_to(c2).skip(offset as usize).next() {
+        if let Some(c) = c1.line_to(c2).nth(offset as usize) {
             if let Some((dir1, dir2)) = rng.random_slice_entry(axes) {
                 draw_wall(map, c, *dir1, *dir2);
 

@@ -80,7 +80,7 @@ impl GameEngine {
     }
 
     fn run(&mut self) -> RunState {
-        self.dispatcher.dispatch(&mut self.world);
+        self.dispatcher.dispatch(&self.world);
         self.world.maintain();
 
         AwaitingInput

@@ -1,5 +1,6 @@
 mod hex_coordinates;
 mod level_builder;
+#[allow(clippy::module_inception)]
 mod map;
 mod tile;
 
@@ -40,7 +41,7 @@ impl<'a> System<'a> for IndexMapSystem {
 
         for (_, vs) in (&players, &viewsheds).join() {
             for &pos in vs.iter() {
-                map[pos.into()].reveal();
+                map[pos].reveal();
             }
         }
     }

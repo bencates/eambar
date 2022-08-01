@@ -18,11 +18,7 @@ pub fn generate_regions(map: &Map, rng: &mut RandomNumberGenerator) -> Vec<Vec<C
             .get_noise3d(c.q as f32, c.r as f32, (-c.q - c.r) as f32)
             .to_bits();
 
-        if noise_regions.contains_key(&region_id) {
-            noise_regions.get_mut(&region_id).unwrap().push(c);
-        } else {
-            noise_regions.insert(region_id, vec![c]);
-        }
+        noise_regions.entry(region_id).or_default().push(c);
     }
 
     noise_regions.into_iter().map(|(_, v)| v).collect()

@@ -15,7 +15,7 @@ pub fn try_action(world: &mut World, action: Action) -> Result<(), ActionError> 
     log::debug!("Player action: {:?}", action);
 
     let player = *world.fetch::<Entity>();
-    let mut intents = Intents::fetch(&world);
+    let mut intents = Intents::fetch(world);
 
     match action {
         Action::Move(direction) => {
