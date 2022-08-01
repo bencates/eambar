@@ -1,5 +1,9 @@
 use crate::prelude::*;
 
+pub type SpawnBuilder = fn(EntityBuilder) -> EntityBuilder;
+
+pub const SPAWN_TABLE: [SpawnBuilder; 2] = [monster::infected_crewmember, monster::alien_hatchling];
+
 /// Marker trait for the player entity.
 #[derive(Component, Default)]
 #[storage(NullStorage)]

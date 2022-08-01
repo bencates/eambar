@@ -11,8 +11,6 @@ pub fn empty_deck(width: i32, height: i32) -> Map {
         map[c] = Tile::floor();
     }
 
-    map.spawn_points.push(map_center);
-
     map
 }
 
@@ -21,8 +19,8 @@ pub fn add_engines(map: &mut Map) {
         x: width,
         y: height,
     } = map.dimensions();
-    let map_center = map.spawn_points[0];
 
+    let map_center = Coordinate::from(Point::new(width / 2, height / 2));
     let half_radius = i32::min(width / 4, height / 4);
 
     for coord in [
