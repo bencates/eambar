@@ -1,9 +1,10 @@
-use crate::map::DeckBuilder;
-use crate::ui::{MAP_HEIGHT, MAP_WIDTH};
 use crate::{
     entity::{monster, player},
+    map::DeckBuilder,
     prelude::*,
+    ui::{MAP_HEIGHT, MAP_WIDTH},
 };
+use std::collections::HashMap;
 
 pub fn build_level(world: &mut World) {
     let map = {
@@ -29,16 +30,14 @@ pub fn build_level(world: &mut World) {
         // world.insert(Inventory::default());
     }
 
-    for coord in spawn_points {
-        let builder = {
-            let rng = world.get_mut::<RandomNumberGenerator>().unwrap();
+    let regions = {
+        let rng = world.get_mut::<RandomNumberGenerator>().unwrap();
+        generate_regions(&map, rng)
+    };
+    let spawn_dice = DiceType::new(1, 6, -3);
 
-            spawn_table(rng)
-        };
-
-        log::debug!("Spawning a monster at {coord:?}");
-
-        builder(world.create_entity()).with(coord).build();
+    for region in regions {
+        spawn_region(world, &region, spawn_dice);
     }
 
     world.insert(map);
@@ -48,5 +47,55 @@ fn spawn_table(rng: &mut RandomNumberGenerator) -> impl FnOnce(EntityBuilder) ->
     match rng.range(0, 2) {
         0 => monster::infected_crewmember,
         _ => monster::alien_hatchling,
+    }
+}
+
+/// Randomly subdivides the map into regions.
+///
+/// Inspired by https://bfnightly.bracketproductions.com/rustbook/chapter_27.html#grouped-placement-in-our-map---enter-the-voronoi
+fn generate_regions(map: &Map, rng: &mut RandomNumberGenerator) -> Vec<Vec<Coordinate>> {
+    let mut noise = FastNoise::seeded(rng.rand());
+    noise.set_noise_type(NoiseType::Cellular);
+    noise.set_frequency(0.08); // Magic number, tweak for desired results.
+    noise.set_cellular_distance_function(CellularDistanceFunction::Manhattan);
+
+    let mut noise_regions: HashMap<u32, Vec<Coordinate>> = HashMap::new();
+
+    for c in map.iter().filter(|&c| !map[c].is_blocked()) {
+        let region_id = noise
+            .get_noise3d(c.q as f32, c.r as f32, (-c.q - c.r) as f32)
+            .to_bits();
+
+        if noise_regions.contains_key(&region_id) {
+            noise_regions.get_mut(&region_id).unwrap().push(c);
+        } else {
+            noise_regions.insert(region_id, vec![c]);
+        }
+    }
+
+    noise_regions.into_iter().map(|(_, v)| v).collect()
+}
+
+fn spawn_region(world: &mut World, region: &[Coordinate], spawn_dice: DiceType) {
+    let mut spawns = HashMap::new();
+
+    {
+        let rng = world.get_mut::<RandomNumberGenerator>().unwrap();
+
+        let num_spawns: usize = (rng.roll(spawn_dice))
+            .clamp(0, region.len() as i32)
+            .try_into()
+            .unwrap_or_default();
+
+        while spawns.len() < num_spawns {
+            let coord = rng.random_slice_entry(region).unwrap();
+            if !spawns.contains_key(coord) {
+                spawns.insert(*coord, spawn_table(rng));
+            }
+        }
+    }
+
+    for (coord, builder) in spawns {
+        builder(world.create_entity()).with(coord).build();
     }
 }
