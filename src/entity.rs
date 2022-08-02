@@ -28,8 +28,9 @@ pub fn player(entity: EntityBuilder) -> EntityBuilder {
         .with(Player)
         .with(Name::new("Player"))
         .with(Appearance {
-            color: ColorPair::new(YELLOW, BLACK),
+            color: ColorPair::new(YELLOW, RGBA::new()),
             glyph: '@',
+            z_order: 3,
         })
         .with(CharacterSheet::new(30, 5, 2))
         .with(Viewshed::new(25))
@@ -43,8 +44,9 @@ pub mod monster {
             .with(Monster)
             .with(Name::new("Infected Crewmember"))
             .with(Appearance {
-                color: ColorPair::new(RED, BLACK),
+                color: ColorPair::new(RED, RGBA::new()),
                 glyph: 'z',
+                z_order: 2,
             })
             .with(CharacterSheet::new(16, 4, 1))
             .with(Viewshed::new(25))
@@ -56,8 +58,9 @@ pub mod monster {
             .with(Monster)
             .with(Name::new("Alien Hatchling"))
             .with(Appearance {
-                color: ColorPair::new(RED, BLACK),
+                color: ColorPair::new(RED, RGBA::new()),
                 glyph: 'h',
+                z_order: 2,
             })
             .with(CharacterSheet::new(16, 4, 1))
             .with(Viewshed::new(25))
@@ -73,8 +76,9 @@ mod item {
             .with(Item)
             .with(Name::new("Repair Kit"))
             .with(Appearance {
-                color: ColorPair::new(ORANGE, BLACK),
+                color: ColorPair::new(ORANGE, RGBA::new()),
                 glyph: 'δ',
+                z_order: 1,
             })
     }
 }

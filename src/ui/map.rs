@@ -18,7 +18,7 @@ pub(super) fn draw(ctx: &mut BTerm, world: &World) {
         if let Ok(appearance) = Appearance::try_from(&map[map_coord]) {
             ctx.set_fancy(
                 map_origin + map_coord.into(),
-                0,
+                appearance.z_order,
                 rotation,
                 scale,
                 appearance.color.fg,
@@ -32,7 +32,7 @@ pub(super) fn draw(ctx: &mut BTerm, world: &World) {
         if map[coord].is_visible() {
             ctx.set_fancy(
                 map_origin + coord.into(),
-                1,
+                appearance.z_order,
                 rotation,
                 scale,
                 appearance.color.fg,

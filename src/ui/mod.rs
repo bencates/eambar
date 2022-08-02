@@ -39,6 +39,7 @@ impl Display for Name {
 pub struct Appearance {
     pub glyph: char,
     pub color: ColorPair,
+    pub z_order: i32,
 }
 
 pub fn setup() -> BResult<BTerm> {

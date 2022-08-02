@@ -91,7 +91,7 @@ impl TryFrom<&Tile> for Appearance {
         }
 
         let (mut color, glyph) = match tile.tile_type {
-            TileType::Floor => (ColorPair::new(TEAL, BLACK), '.'),
+            TileType::Floor => (ColorPair::new(TEAL, BLACK), '░'),
             TileType::Wall => (ColorPair::new(GREEN, BLACK), '#'),
         };
 
@@ -99,6 +99,10 @@ impl TryFrom<&Tile> for Appearance {
             color.fg = color.fg.to_greyscale();
         }
 
-        Ok(Self { color, glyph })
+        Ok(Self {
+            color,
+            glyph,
+            z_order: 0,
+        })
     }
 }
