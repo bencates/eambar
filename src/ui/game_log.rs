@@ -25,9 +25,9 @@ impl GameLog {
         });
     }
 
-    // pub fn player_pickup(&mut self, item: impl Display) {
-    //     self.entries.push(format!("You picked up {item}"));
-    // }
+    pub fn player_pickup(&mut self, item: impl Display) {
+        self.entries.push(format!("You picked up {item}"));
+    }
 
     pub fn player_death(&mut self) {
         self.log("You died! Resetting your health.");
@@ -36,11 +36,6 @@ impl GameLog {
     pub fn death(&mut self, victim: impl Display) {
         self.log(format!("{} died.", victim));
     }
-
-    // pub fn error(&mut self, error: impl Debug + Display) {
-    //     console::log(format!("ERROR: {:?}", error));
-    //     self.entries.push(error.to_string());
-    // }
 
     fn log(&mut self, msg: impl Display) {
         log::info!("{msg}");

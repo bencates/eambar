@@ -2,7 +2,11 @@ use crate::prelude::*;
 
 pub type SpawnBuilder = fn(EntityBuilder) -> EntityBuilder;
 
-pub const SPAWN_TABLE: [SpawnBuilder; 2] = [monster::infected_crewmember, monster::alien_hatchling];
+pub const SPAWN_TABLE: [SpawnBuilder; 3] = [
+    monster::infected_crewmember,
+    monster::alien_hatchling,
+    item::repair_kit,
+];
 
 /// Marker trait for the player entity.
 #[derive(Component, Default)]
@@ -13,6 +17,11 @@ pub struct Player;
 #[derive(Component, Default)]
 #[storage(NullStorage)]
 pub struct Monster;
+
+/// Marker trait for monsters.
+#[derive(Component, Default)]
+#[storage(NullStorage)]
+pub struct Item;
 
 pub fn player(entity: EntityBuilder) -> EntityBuilder {
     entity
@@ -53,5 +62,19 @@ pub mod monster {
             .with(CharacterSheet::new(16, 4, 1))
             .with(Viewshed::new(25))
             .with(BlocksTile)
+    }
+}
+
+mod item {
+    use crate::prelude::*;
+
+    pub fn repair_kit(entity: EntityBuilder) -> EntityBuilder {
+        entity
+            .with(Item)
+            .with(Name::new("Repair Kit"))
+            .with(Appearance {
+                color: ColorPair::new(ORANGE, BLACK),
+                glyph: 'δ',
+            })
     }
 }

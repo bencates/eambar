@@ -1,7 +1,8 @@
 use crate::{
     ai::MonsterAI,
     game_mechanics::{
-        MaintainCharacterSheetSystem, MeleeCombatSystem, MovementSystem, VisibilitySystem,
+        ItemPickupSystem, MaintainCharacterSheetSystem, MeleeCombatSystem, MovementSystem,
+        VisibilitySystem,
     },
     level::build_level,
     map::IndexMapSystem,
@@ -60,6 +61,7 @@ impl GameEngine {
         let mut dispatcher = DispatcherBuilder::new()
             .with(MonsterAI, "monster_ai", &[])
             .with(MovementSystem, "movement", &["monster_ai"])
+            .with(ItemPickupSystem, "item_pickup", &[])
             .with(MeleeCombatSystem, "melee_combat", &["monster_ai"])
             .with(VisibilitySystem, "visibility", &["movement"])
             .with(
@@ -72,6 +74,7 @@ impl GameEngine {
 
         dispatcher.setup(&mut world);
         world.register::<Appearance>();
+        world.register::<Item>();
 
         world.insert(RandomNumberGenerator::new());
         world.insert(MainMenu);

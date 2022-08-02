@@ -74,6 +74,8 @@ fn handle_input(ctx: &BTerm) -> RunState {
         S => PlayerAction(Move(South)),
         D => PlayerAction(Move(SouthEast)),
 
+        G => PlayerAction(GetItem),
+
         _ => AwaitingInput,
     })
 }

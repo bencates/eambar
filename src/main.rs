@@ -15,7 +15,7 @@ mod prelude {
 
     pub use crate::{
         engine::RunState,
-        entity::{Monster, Player},
+        entity::{Item, Monster, Player},
         game_mechanics::{CharacterSheet, Intents, Viewshed},
         map::{BlocksTile, Coordinate, Direction, Map},
         player_turn::Action,

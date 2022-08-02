@@ -1,10 +1,12 @@
 mod character_sheet;
 mod field_of_view;
+mod inventory;
 mod melee_combat;
 mod movement;
 
 pub use character_sheet::*;
 pub use field_of_view::*;
+pub use inventory::*;
 pub use melee_combat::*;
 pub use movement::*;
 
@@ -14,6 +16,7 @@ use crate::prelude::*;
 pub struct Intents<'a> {
     wants_to_move: WriteStorage<'a, WantsToMove>,
     wants_to_melee: WriteStorage<'a, WantsToMelee>,
+    wants_to_pick_up: WriteStorage<'a, WantsToPickUp>,
 }
 
 impl<'a> Intents<'a> {
@@ -27,5 +30,11 @@ impl<'a> Intents<'a> {
         self.wants_to_melee
             .insert(attacker, WantsToMelee(target))
             .expect("could not queue melee attack intent");
+    }
+
+    pub fn wants_to_pick_up(&mut self, recipient: Entity, item: Entity) {
+        self.wants_to_pick_up
+            .insert(recipient, WantsToPickUp(item))
+            .expect("could not queue item pickup intent");
     }
 }
