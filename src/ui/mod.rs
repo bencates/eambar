@@ -7,8 +7,11 @@ mod sidebar;
 use crate::prelude::*;
 use std::fmt::{self, Display};
 
-pub use game_log::GameLog;
+pub use game_log::{GameLog, RenderGameLogSystem};
+pub use layout::RenderUILayoutSystem;
 pub use main_menu::main_menu;
+pub use map::RenderMapSystem;
+pub use sidebar::RenderPlayerStatsSystem;
 
 pub const TERM_WIDTH: i32 = 80;
 pub const TERM_HEIGHT: i32 = 60;
@@ -17,6 +20,8 @@ pub const MAP_WIDTH: i32 = 49;
 pub const MAP_HEIGHT: i32 = 49;
 
 const SIDEBAR_WIDTH: i32 = TERM_WIDTH - MAP_WIDTH - 2;
+
+const FULL_PAINT: usize = (TERM_WIDTH * TERM_HEIGHT) as usize;
 
 #[derive(Component)]
 pub struct Name(String);
@@ -50,18 +55,7 @@ pub fn setup() -> BResult<BTerm> {
         .build()
 }
 
-pub fn frame(ctx: &mut BTerm, world: &World) -> RunState {
-    ctx.cls();
-
-    layout::draw(ctx, world);
-    map::draw(ctx, world);
-    sidebar::draw(ctx, world);
-    game_log::draw(ctx, world);
-
-    handle_input(ctx)
-}
-
-fn handle_input(ctx: &BTerm) -> RunState {
+pub fn handle_input(ctx: &BTerm) -> RunState {
     use {Action::*, Direction::*, RunState::*, VirtualKeyCode::*};
 
     ctx.key.map_or(AwaitingInput, |key| match key {

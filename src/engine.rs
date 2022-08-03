@@ -8,7 +8,9 @@ use crate::{
     map::IndexMapSystem,
     player_turn::try_action,
     prelude::*,
-    ui,
+    ui::{
+        self, RenderGameLogSystem, RenderMapSystem, RenderPlayerStatsSystem, RenderUILayoutSystem,
+    },
 };
 use RunState::*;
 
@@ -39,7 +41,7 @@ impl GameState for GameEngine {
 
                 self.run()
             }
-            AwaitingInput => ui::frame(ctx, &self.world),
+            AwaitingInput => ui::handle_input(ctx),
             PlayerAction(action) => match try_action(&mut self.world, action) {
                 Ok(()) => Running,
                 Err(_) => AwaitingInput,
@@ -48,6 +50,8 @@ impl GameState for GameEngine {
         };
 
         self.world.insert(next_run_state);
+
+        render_draw_buffer(ctx).unwrap();
     }
 }
 
@@ -64,13 +68,28 @@ impl GameEngine {
             .with(
                 MaintainCharacterSheetSystem,
                 "maintain_character_sheet",
-                &[],
+                &["melee_combat"],
             )
-            .with(IndexMapSystem, "index_map", &["movement", "visibility"])
+            .with(
+                IndexMapSystem,
+                "index_map",
+                &["movement", "visibility", "maintain_character_sheet"],
+            )
+            .with(RenderUILayoutSystem, "render_ui_layout", &[])
+            .with(RenderMapSystem, "render_map", &["index_map"])
+            .with(
+                RenderPlayerStatsSystem,
+                "render_stats",
+                &["maintain_character_sheet"],
+            )
+            .with(
+                RenderGameLogSystem,
+                "render_game_log",
+                &["item_pickup", "melee_combat", "maintain_character_sheet"],
+            )
             .build();
 
         dispatcher.setup(&mut world);
-        world.register::<Appearance>();
         world.register::<Item>();
 
         world.insert(RandomNumberGenerator::new());

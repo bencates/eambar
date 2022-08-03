@@ -1,4 +1,4 @@
-use super::{MAP_HEIGHT, SIDEBAR_WIDTH, TERM_HEIGHT};
+use super::{FULL_PAINT, MAP_HEIGHT, SIDEBAR_WIDTH, TERM_HEIGHT};
 use crate::prelude::*;
 use std::fmt::Display;
 
@@ -43,16 +43,27 @@ impl GameLog {
     }
 }
 
-pub(super) fn draw(ctx: &mut BTerm, world: &World) {
-    let game_log = world.fetch::<GameLog>();
+pub struct RenderGameLogSystem;
 
-    for (idx, entry) in game_log
-        .entries
-        .iter()
-        .rev()
-        .enumerate()
-        .take(LOG_HEIGHT as usize)
-    {
-        ctx.print(SIDEBAR_WIDTH + 2, MAP_HEIGHT + 3 + idx as i32, entry);
+impl<'a> System<'a> for RenderGameLogSystem {
+    type SystemData = Read<'a, GameLog>;
+
+    fn run(&mut self, game_log: Self::SystemData) {
+        let mut draw_batch = DrawBatch::new();
+
+        for (idx, entry) in game_log
+            .entries
+            .iter()
+            .rev()
+            .enumerate()
+            .take(LOG_HEIGHT as usize)
+        {
+            draw_batch.print(
+                (SIDEBAR_WIDTH + 2, MAP_HEIGHT + 3 + idx as i32).into(),
+                entry,
+            );
+        }
+
+        draw_batch.submit(2 * FULL_PAINT).unwrap();
     }
 }
