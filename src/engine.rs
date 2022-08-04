@@ -2,14 +2,15 @@ use crate::{
     ai::MonsterAI,
     game_mechanics::{
         ItemPickupSystem, MaintainCharacterSheetSystem, MeleeCombatSystem, MovementSystem,
-        VisibilitySystem,
+        PlayerInventorySystem, VisibilitySystem,
     },
     level::build_level,
     map::IndexMapSystem,
     player_turn::try_action,
     prelude::*,
     ui::{
-        self, RenderGameLogSystem, RenderMapSystem, RenderPlayerStatsSystem, RenderUILayoutSystem,
+        self, RenderGameLogSystem, RenderInventorySystem, RenderMapSystem, RenderPlayerStatsSystem,
+        RenderUILayoutSystem,
     },
 };
 use RunState::*;
@@ -71,6 +72,11 @@ impl GameEngine {
                 &["melee_combat"],
             )
             .with(
+                PlayerInventorySystem::new(&mut world),
+                "player_inventory",
+                &["item_pickup"],
+            )
+            .with(
                 IndexMapSystem,
                 "index_map",
                 &["movement", "visibility", "maintain_character_sheet"],
@@ -81,6 +87,11 @@ impl GameEngine {
                 RenderPlayerStatsSystem,
                 "render_stats",
                 &["maintain_character_sheet"],
+            )
+            .with(
+                RenderInventorySystem,
+                "render_inventory",
+                &["player_inventory"],
             )
             .with(
                 RenderGameLogSystem,

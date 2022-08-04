@@ -11,7 +11,7 @@ pub use game_log::{GameLog, RenderGameLogSystem};
 pub use layout::RenderUILayoutSystem;
 pub use main_menu::main_menu;
 pub use map::RenderMapSystem;
-pub use sidebar::RenderPlayerStatsSystem;
+pub use sidebar::{RenderInventorySystem, RenderPlayerStatsSystem};
 
 pub const TERM_WIDTH: i32 = 80;
 pub const TERM_HEIGHT: i32 = 60;
