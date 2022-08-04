@@ -7,6 +7,7 @@ mod game_mechanics;
 mod level;
 mod map;
 mod player_turn;
+mod target;
 mod ui;
 
 mod prelude {
@@ -18,6 +19,7 @@ mod prelude {
         entity::{Item, Monster, Player},
         game_mechanics::{CharacterSheet, Intents, Inventory, ProvidesHealing, Viewshed},
         map::{BlocksTile, Coordinate, Direction, Map},
+        target::Target,
         ui::{Appearance, GameLog, Name},
     };
 }

@@ -95,6 +95,7 @@ impl GameEngine {
 
         dispatcher.setup(&mut world);
         world.register::<Item>();
+        world.register::<Target>();
 
         world.insert(RandomNumberGenerator::new());
 

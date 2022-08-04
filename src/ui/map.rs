@@ -13,13 +13,19 @@ impl<'a> System<'a> for RenderMapSystem {
     type SystemData = (
         ReadExpect<'a, Map>,
         ReadExpect<'a, Entity>,
+        Entities<'a>,
         ReadStorage<'a, Coordinate>,
         ReadStorage<'a, Appearance>,
         ReadStorage<'a, Viewshed>,
+        ReadStorage<'a, Target>,
     );
 
-    fn run(&mut self, (map, player, coordinates, appearances, viewsheds): Self::SystemData) {
+    fn run(
+        &mut self,
+        (map, player, entities, coordinates, appearances, viewsheds, targets): Self::SystemData,
+    ) {
         let player_viewshed = viewsheds.get(*player).unwrap();
+        let player_target = targets.get(*player);
 
         let mut draw_batch = DrawBatch::new();
 
@@ -45,14 +51,20 @@ impl<'a> System<'a> for RenderMapSystem {
             }
         }
 
-        for (&coord, appearance) in (&coordinates, &appearances).join() {
+        for (entity, &coord, appearance) in (&entities, &coordinates, &appearances).join() {
+            let mut color = appearance.color;
+
+            if player_target.map_or(false, |&Target(target)| entity == target) {
+                color.bg = RGBA::named(WHITE);
+            }
+
             if player_viewshed.is_visible(coord) {
                 draw_batch.set_fancy(
                     MAP_ORIGIN + coord.into(),
                     appearance.z_order,
                     NO_ROTATION,
                     BASE_SCALE,
-                    appearance.color,
+                    color,
                     to_cp437(appearance.glyph),
                 );
             }
