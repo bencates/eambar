@@ -10,7 +10,6 @@ pub struct Tile {
     tile_type: TileType,
     blocked: bool,
     revealed: bool,
-    visible: bool,
     contents: Vec<Entity>,
 }
 
@@ -20,7 +19,6 @@ impl Default for Tile {
             tile_type: TileType::Wall,
             blocked: true,
             revealed: false,
-            visible: false,
             contents: Vec::new(),
         }
     }
@@ -47,10 +45,6 @@ impl Tile {
         self.blocked
     }
 
-    pub fn is_visible(&self) -> bool {
-        self.visible
-    }
-
     // pub fn contents(&self) -> &[Entity] {
     //     &self.contents
     // }
@@ -64,7 +58,6 @@ impl Tile {
 
     pub(super) fn reset_index(&mut self) {
         self.blocked = self.tile_type == TileType::Wall;
-        self.visible = false;
         self.contents.clear();
     }
 
@@ -73,7 +66,6 @@ impl Tile {
     }
 
     pub(super) fn reveal(&mut self) {
-        self.visible = true;
         self.revealed = true;
     }
 
@@ -90,14 +82,10 @@ impl TryFrom<&Tile> for Appearance {
             return Err(());
         }
 
-        let (mut color, glyph) = match tile.tile_type {
+        let (color, glyph) = match tile.tile_type {
             TileType::Floor => (ColorPair::new(TEAL, BLACK), '░'),
             TileType::Wall => (ColorPair::new(GREEN, BLACK), '#'),
         };
-
-        if !tile.visible {
-            color.fg = color.fg.to_greyscale();
-        }
 
         Ok(Self {
             color,
