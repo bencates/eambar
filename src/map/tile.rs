@@ -65,7 +65,7 @@ impl Tile {
         self.blocked = true;
     }
 
-    pub(super) fn reveal(&mut self) {
+    pub fn reveal(&mut self) {
         self.revealed = true;
     }
 

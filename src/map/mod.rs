@@ -19,16 +19,11 @@ impl<'a> System<'a> for IndexMapSystem {
     type SystemData = (
         WriteExpect<'a, Map>,
         Entities<'a>,
-        ReadStorage<'a, Player>,
         ReadStorage<'a, Coordinate>,
         ReadStorage<'a, BlocksTile>,
-        ReadStorage<'a, Viewshed>,
     );
 
-    fn run(
-        &mut self,
-        (mut map, entities, players, coordinates, blockers, viewsheds): Self::SystemData,
-    ) {
+    fn run(&mut self, (mut map, entities, coordinates, blockers): Self::SystemData) {
         map.tiles.iter_mut().for_each(|tile| tile.reset_index());
 
         for (entity, coord) in (&entities, &coordinates).join() {
@@ -37,12 +32,6 @@ impl<'a> System<'a> for IndexMapSystem {
             }
 
             map[*coord].add_entity(entity);
-        }
-
-        for (_, vs) in (&players, &viewsheds).join() {
-            for &pos in vs.iter() {
-                map[pos].reveal();
-            }
         }
     }
 }

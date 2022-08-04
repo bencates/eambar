@@ -60,10 +60,22 @@ impl Coordinate {
             .map(|c| c.into())
     }
 
+    pub fn ring(self, radius: i32) -> impl Iterator<Item = Self> {
+        Hex2dCoordinate::from(self)
+            .ring_iter(radius, hex2d::Spin::CW(hex2d::XY))
+            .map(|c| c.into())
+    }
+
     pub fn line_to(self, other: Self) -> impl Iterator<Item = Self> {
         Hex2dCoordinate::from(self)
             .line_to_iter(other.into())
             .map(|c| c.into())
+    }
+
+    pub fn fat_line_to(self, other: Self) -> impl Iterator<Item = (Self, Self)> {
+        Hex2dCoordinate::from(self)
+            .line_to_with_edge_detection_iter(other.into())
+            .map(|(c1, c2)| (c1.into(), c2.into()))
     }
 }
 
