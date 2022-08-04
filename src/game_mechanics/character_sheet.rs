@@ -43,20 +43,21 @@ impl CharacterSheet {
     }
 }
 
-pub struct MaintainCharacterSheetSystem;
+pub struct DeathSystem;
 
-impl<'a> System<'a> for MaintainCharacterSheetSystem {
+impl<'a> System<'a> for DeathSystem {
     type SystemData = (
         Entities<'a>,
         ReadStorage<'a, Player>,
         ReadStorage<'a, Name>,
         WriteStorage<'a, CharacterSheet>,
+        WriteStorage<'a, Coordinate>,
         Write<'a, GameLog>,
     );
 
     fn run(
         &mut self,
-        (entities, players, names, mut character_sheets, mut game_log): Self::SystemData,
+        (entities, players, names, mut character_sheets, mut positions, mut game_log): Self::SystemData,
     ) {
         for (entity, name, character) in (&entities, &names, &mut character_sheets).join() {
             if !character.is_alive() {
@@ -67,9 +68,9 @@ impl<'a> System<'a> for MaintainCharacterSheetSystem {
                 } else {
                     game_log.death(name);
 
-                    // // Removing the position clears the entity off the map immediately.
-                    // // All other components will be removed automatically after the turn.
-                    // positions.remove(entity).unwrap();
+                    // Removing the position clears the entity off the map immediately.
+                    // All other components will be removed automatically after the turn.
+                    positions.remove(entity).unwrap();
                     entities.delete(entity).unwrap();
                 }
             }

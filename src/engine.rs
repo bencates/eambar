@@ -1,8 +1,8 @@
 use crate::{
     ai::MonsterAI,
     game_mechanics::{
-        ItemPickupSystem, ItemUseSystem, MaintainCharacterSheetSystem, MeleeCombatSystem,
-        MovementSystem, PlayerInventorySystem, VisibilitySystem,
+        DeathSystem, ItemPickupSystem, ItemUseSystem, MeleeCombatSystem, MovementSystem,
+        PlayerInventorySystem, VisibilitySystem,
     },
     level::build_level,
     map::IndexMapSystem,
@@ -63,13 +63,9 @@ impl GameEngine {
                 "visibility",
                 &["movement"],
             )
+            .with(DeathSystem, "maintain_character_sheet", &["melee_combat"])
             .with(
-                MaintainCharacterSheetSystem,
-                "maintain_character_sheet",
-                &["melee_combat"],
-            )
-            .with(
-                PlayerInventorySystem::new(&mut world),
+                PlayerInventorySystem,
                 "player_inventory",
                 &["item_pickup", "item_use"],
             )

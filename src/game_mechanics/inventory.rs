@@ -7,7 +7,6 @@ pub struct WantsToPickUp(pub(super) Entity);
 pub struct Inventory(pub Vec<Entity>);
 
 #[derive(Component)]
-#[storage(FlaggedStorage)]
 pub struct InInventory(pub(super) Entity);
 
 pub struct ItemPickupSystem;
@@ -42,20 +41,7 @@ impl<'a> System<'a> for ItemPickupSystem {
     }
 }
 
-pub struct PlayerInventorySystem {
-    cursor: ReaderId<ComponentEvent>,
-}
-
-impl PlayerInventorySystem {
-    pub fn new(world: &mut World) -> Self {
-        world.register::<InInventory>();
-        let mut in_inventories = world.write_component::<InInventory>();
-
-        Self {
-            cursor: in_inventories.register_reader(),
-        }
-    }
-}
+pub struct PlayerInventorySystem;
 
 impl<'a> System<'a> for PlayerInventorySystem {
     type SystemData = (
@@ -66,27 +52,17 @@ impl<'a> System<'a> for PlayerInventorySystem {
     );
 
     fn run(&mut self, (mut inventory, player, entities, in_inventories): Self::SystemData) {
-        let (mut inserted, mut removed) = (BitSet::new(), BitSet::new());
+        let player_inventory: Vec<_> = (&entities, &in_inventories)
+            .join()
+            .filter_map(|(item, &InInventory(owner))| (owner == *player).then(|| item))
+            .collect();
 
-        for event in in_inventories.channel().read(&mut self.cursor) {
-            match event {
-                ComponentEvent::Inserted(id) => inserted.add(*id),
-                ComponentEvent::Modified(_) => unreachable!(),
-                ComponentEvent::Removed(id) => removed.add(*id),
-            };
-        }
+        inventory
+            .0
+            .retain(|&item| entities.is_alive(item) && player_inventory.contains(&item));
 
-        inventory.0.retain(|&item| entities.is_alive(item));
-
-        for (_item, &InInventory(owner), _) in (&entities, &in_inventories, &removed).join() {
-            if owner == *player {
-                todo!();
-                // inventory.remove(item);
-            }
-        }
-
-        for (item, &InInventory(owner), _) in (&entities, &in_inventories, &inserted).join() {
-            if owner == *player {
+        for item in player_inventory {
+            if !inventory.0.contains(&item) {
                 inventory.0.push(item);
             }
         }

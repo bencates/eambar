@@ -1,3 +1,4 @@
+use super::InInventory;
 use crate::prelude::*;
 
 #[derive(Component)]
@@ -14,11 +15,18 @@ impl<'a> System<'a> for ItemUseSystem {
         WriteStorage<'a, CharacterSheet>,
         WriteStorage<'a, WantsToUse>,
         ReadStorage<'a, ProvidesHealing>,
+        WriteStorage<'a, InInventory>,
     );
 
     fn run(
         &mut self,
-        (entities, mut character_sheets, mut item_use_intents, provides_healing): Self::SystemData,
+        (
+            entities,
+            mut character_sheets,
+            mut item_use_intents,
+            provides_healing,
+            mut in_inventories,
+        ): Self::SystemData,
     ) {
         for (character_sheet, &WantsToUse(item)) in
             (&mut character_sheets, &item_use_intents).join()
@@ -27,6 +35,10 @@ impl<'a> System<'a> for ItemUseSystem {
                 character_sheet.heal(amount);
             }
 
+            // Removing the inventory marker clears the entity off the inventory
+            // immediately. All other components will be removed automatically
+            // after the turn.
+            in_inventories.remove(item).unwrap();
             entities.delete(item).unwrap();
         }
 

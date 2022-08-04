@@ -21,7 +21,7 @@ pub fn handle_input(ctx: &BTerm, world: &mut World) -> RunState {
             S => attack_or_move(world, South),
             D => attack_or_move(world, SouthEast),
 
-            G => get_item(world),
+            G => pick_up_item(world),
 
             _ => AwaitingInput,
         }
@@ -52,7 +52,7 @@ fn attack_or_move(world: &mut World, direction: Direction) -> RunState {
     RunState::Running
 }
 
-fn get_item(world: &mut World) -> RunState {
+fn pick_up_item(world: &mut World) -> RunState {
     let map = world.fetch::<Map>();
     let player = *world.fetch::<Entity>();
     let pos = *world.read_component::<Coordinate>().get(player).unwrap();
