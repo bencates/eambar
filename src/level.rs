@@ -25,6 +25,8 @@ pub fn build_level(world: &mut World) {
         (&entities, &players).join().next().unwrap().0
     };
 
+    log::debug!("Player is {player_entity:?}");
+
     world.insert(map);
     world.insert(player_entity);
 }

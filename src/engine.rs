@@ -58,7 +58,11 @@ impl GameEngine {
             .with(ItemPickupSystem, "item_pickup", &[])
             .with(ItemUseSystem, "item_use", &[])
             .with(MeleeCombatSystem, "melee_combat", &["monster_ai"])
-            .with(VisibilitySystem, "visibility", &["movement"])
+            .with(
+                VisibilitySystem::new(&mut world),
+                "visibility",
+                &["movement"],
+            )
             .with(
                 MaintainCharacterSheetSystem,
                 "maintain_character_sheet",

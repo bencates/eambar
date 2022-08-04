@@ -14,17 +14,12 @@ impl<'a> System<'a> for MovementSystem {
         ReadExpect<'a, Map>,
         WriteStorage<'a, WantsToMove>,
         WriteStorage<'a, Coordinate>,
-        WriteStorage<'a, Viewshed>,
     );
 
-    fn run(&mut self, (map, mut move_intents, mut coordinates, mut viewsheds): Self::SystemData) {
-        for (&WantsToMove(dest), coord, vs) in
-            (&move_intents, &mut coordinates, &mut viewsheds).join()
-        {
+    fn run(&mut self, (map, mut move_intents, mut coordinates): Self::SystemData) {
+        for (&WantsToMove(dest), coord) in (&move_intents, &mut coordinates).join() {
             if is_legal_move(&map, dest) {
                 *coord = dest;
-
-                vs.touch();
             }
         }
 

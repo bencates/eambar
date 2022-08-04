@@ -17,6 +17,7 @@ use Direction::*;
 ///    \_____/
 ///   +r     -s
 #[derive(Clone, Copy, Component, Debug, Hash, PartialEq, Eq)]
+#[storage(FlaggedStorage)]
 pub struct Coordinate {
     pub q: i32,
     pub r: i32,
