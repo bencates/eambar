@@ -34,6 +34,10 @@ impl CharacterSheet {
         i32::max(0, raw_damage - self.defense)
     }
 
+    pub fn heal(&mut self, healing: i32) {
+        self.hp = i32::min(self.max_hp, self.hp + healing);
+    }
+
     pub fn apply_damage(&mut self, damage: i32) {
         self.hp -= damage;
     }

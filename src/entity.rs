@@ -80,5 +80,6 @@ mod item {
                 glyph: 'δ',
                 z_order: 1,
             })
+            .with(ProvidesHealing(8))
     }
 }

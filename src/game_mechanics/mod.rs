@@ -1,12 +1,14 @@
 mod character_sheet;
 mod field_of_view;
 mod inventory;
+mod item;
 mod melee_combat;
 mod movement;
 
 pub use character_sheet::*;
 pub use field_of_view::*;
 pub use inventory::*;
+pub use item::*;
 pub use melee_combat::*;
 pub use movement::*;
 
@@ -17,6 +19,7 @@ pub struct Intents<'a> {
     wants_to_move: WriteStorage<'a, WantsToMove>,
     wants_to_melee: WriteStorage<'a, WantsToMelee>,
     wants_to_pick_up: WriteStorage<'a, WantsToPickUp>,
+    wants_to_use: WriteStorage<'a, WantsToUse>,
 }
 
 impl<'a> Intents<'a> {
@@ -36,5 +39,11 @@ impl<'a> Intents<'a> {
         self.wants_to_pick_up
             .insert(recipient, WantsToPickUp(item))
             .expect("could not queue item pickup intent");
+    }
+
+    pub fn wants_to_use(&mut self, user: Entity, item: Entity) {
+        self.wants_to_use
+            .insert(user, WantsToUse(item))
+            .expect("could not queue item use intent");
     }
 }

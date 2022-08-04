@@ -6,11 +6,13 @@ use crate::prelude::*;
 pub enum Action {
     Move(Direction),
     GetItem,
+    UseItem(usize),
 }
 
 pub enum ActionError {
     MovementBlocked,
     NothingToPickUp,
+    NotUsable,
 }
 
 pub fn try_action(world: &mut World, action: Action) -> Result<(), ActionError> {
@@ -49,6 +51,19 @@ pub fn try_action(world: &mut World, action: Action) -> Result<(), ActionError> 
             } else {
                 log::debug!("Nothing here to pick up.");
                 Err(ActionError::NothingToPickUp)
+            }
+        }
+        Action::UseItem(idx) => {
+            let inventory = world.fetch::<Inventory>();
+            if let Some(&item) = inventory.0.get(idx) {
+                intents.wants_to_use(player, item);
+
+                Ok(())
+            } else {
+                let label = (b'A' + idx as u8) as char;
+                log::debug!("No item \"{label}\"");
+
+                Err(ActionError::NotUsable)
             }
         }
     }

@@ -76,6 +76,8 @@ impl<'a> System<'a> for PlayerInventorySystem {
             };
         }
 
+        inventory.0.retain(|&item| entities.is_alive(item));
+
         for (_item, &InInventory(owner), _) in (&entities, &in_inventories, &removed).join() {
             if owner == *player {
                 todo!();
