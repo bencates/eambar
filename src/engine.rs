@@ -6,7 +6,7 @@ use crate::{
     },
     level::build_level,
     map::IndexMapSystem,
-    player_turn::try_action,
+    player_turn,
     prelude::*,
     ui::{
         self, RenderGameLogSystem, RenderInventorySystem, RenderMapSystem, RenderPlayerStatsSystem,
@@ -22,35 +22,27 @@ pub enum RunState {
     /// Initialize the world
     NewGame,
     AwaitingInput,
-    PlayerAction(Action),
     Running,
 }
 
 pub struct GameEngine {
     world: World,
     dispatcher: Dispatcher<'static, 'static>,
+    run_state: RunState,
 }
 
 impl GameState for GameEngine {
     fn tick(&mut self, ctx: &mut BTerm) {
-        let run_state = *self.world.fetch::<RunState>();
-
-        let next_run_state: RunState = match run_state {
+        self.run_state = match self.run_state {
             MainMenu => ui::main_menu(ctx),
             NewGame => {
                 build_level(&mut self.world);
 
                 self.run()
             }
-            AwaitingInput => ui::handle_input(ctx),
-            PlayerAction(action) => match try_action(&mut self.world, action) {
-                Ok(()) => Running,
-                Err(_) => AwaitingInput,
-            },
+            AwaitingInput => player_turn::handle_input(ctx, &mut self.world),
             Running => self.run(),
         };
-
-        self.world.insert(next_run_state);
 
         render_draw_buffer(ctx).unwrap();
     }
@@ -105,9 +97,12 @@ impl GameEngine {
         world.register::<Item>();
 
         world.insert(RandomNumberGenerator::new());
-        world.insert(MainMenu);
 
-        Self { world, dispatcher }
+        Self {
+            world,
+            dispatcher,
+            run_state: MainMenu,
+        }
     }
 
     fn run(&mut self) -> RunState {

@@ -18,7 +18,6 @@ mod prelude {
         entity::{Item, Monster, Player},
         game_mechanics::{CharacterSheet, Intents, Inventory, ProvidesHealing, Viewshed},
         map::{BlocksTile, Coordinate, Direction, Map},
-        player_turn::Action,
         ui::{Appearance, GameLog, Name},
     };
 }

@@ -54,30 +54,3 @@ pub fn setup() -> BResult<BTerm> {
         .with_vsync(false)
         .build()
 }
-
-pub fn handle_input(ctx: &BTerm) -> RunState {
-    use {Action::*, Direction::*, RunState::*, VirtualKeyCode::*};
-
-    ctx.key.map_or(AwaitingInput, |key| {
-        if ctx.control {
-            let option = letter_to_option(key);
-            if option >= 0 {
-                return PlayerAction(UseItem(option as usize));
-            }
-        }
-
-        match key {
-            // Movement keys
-            Q => PlayerAction(Move(NorthWest)),
-            W => PlayerAction(Move(North)),
-            E => PlayerAction(Move(NorthEast)),
-            A => PlayerAction(Move(SouthWest)),
-            S => PlayerAction(Move(South)),
-            D => PlayerAction(Move(SouthEast)),
-
-            G => PlayerAction(GetItem),
-
-            _ => AwaitingInput,
-        }
-    })
-}
