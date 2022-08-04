@@ -1,7 +1,8 @@
-use super::{FULL_PAINT, MAP_HEIGHT, SIDEBAR_WIDTH, TERM_HEIGHT};
+use super::{FULL_PAINT, MAP_HEIGHT, MAP_WIDTH, SIDEBAR_WIDTH, TERM_HEIGHT};
 use crate::prelude::*;
 use std::fmt::Display;
 
+const LOG_WIDTH: i32 = MAP_WIDTH - 2;
 const LOG_HEIGHT: i32 = TERM_HEIGHT - MAP_HEIGHT - 5;
 
 pub struct GameLog {
@@ -50,20 +51,16 @@ impl<'a> System<'a> for RenderGameLogSystem {
 
     fn run(&mut self, game_log: Self::SystemData) {
         let mut draw_batch = DrawBatch::new();
+        let mut text = TextBuilder::empty();
 
-        for (idx, entry) in game_log
-            .entries
-            .iter()
-            .rev()
-            .enumerate()
-            .take(LOG_HEIGHT as usize)
-        {
-            draw_batch.print(
-                (SIDEBAR_WIDTH + 2, MAP_HEIGHT + 3 + idx as i32).into(),
-                entry,
-            );
+        for entry in game_log.entries.iter().rev().take(LOG_HEIGHT as usize) {
+            text.line_wrap(entry).ln();
         }
 
+        let mut text_block =
+            TextBlock::new(SIDEBAR_WIDTH + 2, MAP_HEIGHT + 3, LOG_WIDTH, LOG_HEIGHT);
+        text_block.print(&text).ok(); // Ignore OutOfSpace
+        text_block.render_to_draw_batch(&mut draw_batch);
         draw_batch.submit(2 * FULL_PAINT).unwrap();
     }
 }
