@@ -12,7 +12,30 @@ pub use item::*;
 pub use melee_combat::*;
 pub use movement::*;
 
-use crate::prelude::*;
+use crate::{ai::MonsterAI, map::IndexMapSystem, prelude::*, target::ClearTargetSystem};
+
+pub fn dispatcher<'a, 'b>(world: &mut World) -> Dispatcher<'a, 'b> {
+    DispatcherBuilder::new()
+        .with(MonsterAI, "monster_ai", &[])
+        .with(MovementSystem, "movement", &["monster_ai"])
+        .with(ItemPickupSystem, "item_pickup", &[])
+        .with(ItemUseSystem, "item_use", &[])
+        .with(MeleeCombatSystem, "melee_combat", &["monster_ai"])
+        .with(VisibilitySystem::new(world), "visibility", &["movement"])
+        .with(DeathSystem, "death", &["melee_combat"])
+        .with(
+            PlayerInventorySystem,
+            "player_inventory",
+            &["item_pickup", "item_use"],
+        )
+        .with(ClearTargetSystem, "clear_target", &["visibility", "death"])
+        .with(
+            IndexMapSystem,
+            "index_map",
+            &["movement", "visibility", "death"],
+        )
+        .build()
+}
 
 #[derive(SystemData)]
 pub struct Intents<'a> {

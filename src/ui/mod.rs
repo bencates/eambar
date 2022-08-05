@@ -54,3 +54,13 @@ pub fn setup() -> BResult<BTerm> {
         .with_vsync(false)
         .build()
 }
+
+pub fn dispatcher<'a, 'b>(_world: &mut World) -> Dispatcher<'a, 'b> {
+    DispatcherBuilder::new()
+        .with(RenderUILayoutSystem, "render_ui_layout", &[])
+        .with(RenderMapSystem, "render_map", &[])
+        .with(RenderPlayerStatsSystem, "render_stats", &[])
+        .with(RenderInventorySystem, "render_inventory", &[])
+        .with(RenderGameLogSystem, "render_game_log", &[])
+        .build()
+}
