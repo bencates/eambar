@@ -49,7 +49,7 @@ impl<'a> System<'a> for DeathSystem {
     type SystemData = (
         Entities<'a>,
         ReadStorage<'a, Player>,
-        ReadStorage<'a, Name>,
+        ReadStorage<'a, Appearance>,
         WriteStorage<'a, CharacterSheet>,
         WriteStorage<'a, Coordinate>,
         Write<'a, GameLog>,
@@ -59,14 +59,14 @@ impl<'a> System<'a> for DeathSystem {
         &mut self,
         (entities, players, names, mut character_sheets, mut positions, mut game_log): Self::SystemData,
     ) {
-        for (entity, name, character) in (&entities, &names, &mut character_sheets).join() {
+        for (entity, appearance, character) in (&entities, &names, &mut character_sheets).join() {
             if !character.is_alive() {
                 if players.contains(entity) {
                     // TODO: handle player death
                     game_log.player_death();
                     character.hp = character.max_hp;
                 } else {
-                    game_log.death(name);
+                    game_log.death(appearance);
 
                     // Removing the position clears the entity off the map immediately.
                     // All other components will be removed automatically after the turn.

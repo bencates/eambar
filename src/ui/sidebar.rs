@@ -13,11 +13,10 @@ impl<'a> System<'a> for RenderPlayerStatsSystem {
         ReadExpect<'a, Entity>,
         ReadStorage<'a, CharacterSheet>,
         ReadStorage<'a, Target>,
-        ReadStorage<'a, Name>,
         ReadStorage<'a, Appearance>,
     );
 
-    fn run(&mut self, (player, character_sheets, targets, names, appearances): Self::SystemData) {
+    fn run(&mut self, (player, character_sheets, targets, appearances): Self::SystemData) {
         let mut draw_batch = DrawBatch::new();
 
         let player_character = character_sheets.get(*player).unwrap();
@@ -41,9 +40,9 @@ impl<'a> System<'a> for RenderPlayerStatsSystem {
         );
 
         if let Some(&Target(target)) = targets.get(*player) {
-            if let (Some(name), Some(appearance)) = (names.get(target), appearances.get(target)) {
+            if let Some(appearance) = appearances.get(target) {
                 let mut text = TextBuilder::empty();
-                full_name(&mut text, name, appearance);
+                full_name(&mut text, appearance);
 
                 let mut text_block =
                     TextBlock::new(TARGET_STATS_ORIGIN.x, TARGET_STATS_ORIGIN.y, WIDTH, 1);
@@ -76,13 +75,9 @@ impl<'a> System<'a> for RenderPlayerStatsSystem {
 pub struct RenderInventorySystem;
 
 impl<'a> System<'a> for RenderInventorySystem {
-    type SystemData = (
-        Read<'a, Inventory>,
-        ReadStorage<'a, Name>,
-        ReadStorage<'a, Appearance>,
-    );
+    type SystemData = (Read<'a, Inventory>, ReadStorage<'a, Appearance>);
 
-    fn run(&mut self, (player_inventory, names, appearances): Self::SystemData) {
+    fn run(&mut self, (player_inventory, appearances): Self::SystemData) {
         let mut text = TextBuilder::empty();
 
         text.append("Inventory:").ln().ln();
@@ -90,9 +85,9 @@ impl<'a> System<'a> for RenderInventorySystem {
         let labels = (b'A'..=b'Z').map(|label| label as char);
 
         for (&item, label) in player_inventory.0.iter().zip(labels) {
-            if let (Some(name), Some(appearance)) = (names.get(item), appearances.get(item)) {
+            if let Some(appearance) = appearances.get(item) {
                 text.fg(WHITE).append(&format!("{label}: "));
-                full_name(&mut text, name, appearance);
+                full_name(&mut text, appearance);
                 text.ln();
             }
         }
@@ -107,9 +102,14 @@ impl<'a> System<'a> for RenderInventorySystem {
     }
 }
 
-fn full_name(text: &mut TextBuilder, name: &Name, Appearance { color, glyph, .. }: &Appearance) {
+fn full_name(
+    text: &mut TextBuilder,
+    Appearance {
+        name, color, glyph, ..
+    }: &Appearance,
+) {
     text.fg(WHITE).append("(");
     text.fg(color.fg).append(&glyph.to_string());
     text.fg(WHITE).append(") ");
-    text.fg(color.fg).append(&name.to_string());
+    text.fg(color.fg).append(name);
 }

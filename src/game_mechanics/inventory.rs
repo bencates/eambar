@@ -18,21 +18,29 @@ impl<'a> System<'a> for ItemPickupSystem {
         Entities<'a>,
         WriteStorage<'a, WantsToPickUp>,
         WriteStorage<'a, Coordinate>,
-        ReadStorage<'a, Name>,
+        ReadStorage<'a, Appearance>,
         WriteStorage<'a, InInventory>,
     );
 
     fn run(
         &mut self,
-        (player, mut game_log, entities, mut pickup_intents, mut positions, names, mut inventories): Self::SystemData,
+        (
+            player,
+            mut game_log,
+            entities,
+            mut pickup_intents,
+            mut positions,
+            appearances,
+            mut inventories,
+        ): Self::SystemData,
     ) {
         for (recipient, &WantsToPickUp(item)) in (&entities, &pickup_intents).join() {
             positions.remove(item);
             inventories.insert(item, InInventory(recipient)).unwrap();
 
             if recipient == *player {
-                if let Some(item_name) = names.get(item) {
-                    game_log.player_pickup(item_name);
+                if let Some(item_appearance) = appearances.get(item) {
+                    game_log.player_pickup(item_appearance);
                 }
             }
         }

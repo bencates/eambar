@@ -11,7 +11,7 @@ pub struct MeleeCombatSystem;
 
 impl<'a> System<'a> for MeleeCombatSystem {
     type SystemData = (
-        ReadStorage<'a, Name>,
+        ReadStorage<'a, Appearance>,
         WriteStorage<'a, CharacterSheet>,
         WriteStorage<'a, WantsToMelee>,
         Write<'a, GameLog>,
@@ -19,19 +19,19 @@ impl<'a> System<'a> for MeleeCombatSystem {
 
     fn run(
         &mut self,
-        (names, mut character_sheets, mut melee_intents, mut game_log): Self::SystemData,
+        (appearances, mut character_sheets, mut melee_intents, mut game_log): Self::SystemData,
     ) {
         let mut damage_taken = ChangeSet::new();
 
-        for (attacker_name, attacker, target_entity, target_name, target) in
-            (&names, &character_sheets, &melee_intents)
+        for (attacker_appearance, attacker, target_entity, target_name, target) in
+            (&appearances, &character_sheets, &melee_intents)
                 .join()
                 .filter_map(|(attacker_name, attacker, &WantsToMelee(target_entity))| {
                     Some((
                         attacker_name,
                         attacker,
                         target_entity,
-                        names.get(target_entity)?,
+                        appearances.get(target_entity)?,
                         character_sheets.get(target_entity)?,
                     ))
                 })
@@ -40,7 +40,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
             let raw_damage = attacker.melee_damage();
             let damage = target.block_damage(raw_damage);
 
-            game_log.attack(attacker_name, target_name, damage);
+            game_log.attack(attacker_appearance, target_name, damage);
 
             if damage > 0 {
                 damage_taken.add(target_entity, damage);

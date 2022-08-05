@@ -20,7 +20,7 @@ mod prelude {
         game_mechanics::{CharacterSheet, Intents, Inventory, ProvidesHealing, Viewshed},
         map::{BlocksTile, Coordinate, Direction, Map},
         target::Target,
-        ui::{Appearance, GameLog, Name},
+        ui::{Appearance, GameLog},
     };
 }
 

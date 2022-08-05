@@ -82,15 +82,9 @@ impl TryFrom<&Tile> for Appearance {
             return Err(());
         }
 
-        let (color, glyph) = match tile.tile_type {
-            TileType::Floor => (ColorPair::new(TEAL, BLACK), '░'),
-            TileType::Wall => (ColorPair::new(GREEN, BLACK), '#'),
-        };
-
-        Ok(Self {
-            color,
-            glyph,
-            z_order: 0,
+        Ok(match tile.tile_type {
+            TileType::Floor => Self::map_tile('░', TEAL),
+            TileType::Wall => Self::map_tile('#', GREEN),
         })
     }
 }

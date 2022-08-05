@@ -1,3 +1,4 @@
+mod appearance;
 mod game_log;
 mod layout;
 mod main_menu;
@@ -5,8 +6,8 @@ mod map;
 mod sidebar;
 
 use crate::prelude::*;
-use std::fmt::{self, Display};
 
+pub use appearance::Appearance;
 pub use game_log::{GameLog, RenderGameLogSystem};
 pub use layout::RenderUILayoutSystem;
 pub use main_menu::main_menu;
@@ -22,28 +23,6 @@ pub const MAP_HEIGHT: i32 = 49;
 const SIDEBAR_WIDTH: i32 = TERM_WIDTH - MAP_WIDTH - 2;
 
 const FULL_PAINT: usize = (TERM_WIDTH * TERM_HEIGHT) as usize;
-
-#[derive(Component)]
-pub struct Name(String);
-
-impl Name {
-    pub fn new(name: impl ToString) -> Self {
-        Self(name.to_string())
-    }
-}
-
-impl Display for Name {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.0)
-    }
-}
-
-#[derive(Component)]
-pub struct Appearance {
-    pub glyph: char,
-    pub color: ColorPair,
-    pub z_order: i32,
-}
 
 pub fn setup() -> BResult<BTerm> {
     log::debug!("Generating a {TERM_WIDTH}x{TERM_HEIGHT} console");
