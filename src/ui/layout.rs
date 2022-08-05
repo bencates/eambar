@@ -19,14 +19,16 @@ impl<'a> System<'a> for RenderUILayoutSystem {
             TERM_WIDTH - SIDEBAR_WIDTH - 1,
             TERM_HEIGHT - MAP_HEIGHT - 2,
         );
-        let stats_frame = Rect::with_size(0, 0, SIDEBAR_WIDTH, 6);
+        let player_stats_frame = Rect::with_size(0, 0, SIDEBAR_WIDTH, 6);
+        let target_stats_frame = Rect::with_size(0, 6, SIDEBAR_WIDTH, 6);
 
         let color = ColorPair::new(WHITE, BLACK);
 
         draw_batch.draw_box(outer_frame, color);
         draw_batch.draw_box(sidebar_frame, color);
         draw_batch.draw_box(log_frame, color);
-        draw_batch.draw_box(stats_frame, color);
+        draw_batch.draw_box(player_stats_frame, color);
+        draw_batch.draw_box(target_stats_frame, color);
 
         // Clean up the intersections
         draw_batch.print((SIDEBAR_WIDTH, 0).into(), "┬");
@@ -35,6 +37,8 @@ impl<'a> System<'a> for RenderUILayoutSystem {
         draw_batch.print((SIDEBAR_WIDTH, TERM_HEIGHT - 1).into(), "┴");
         draw_batch.print((0, 6).into(), "├");
         draw_batch.print((SIDEBAR_WIDTH, 6).into(), "┤");
+        draw_batch.print((0, 12).into(), "├");
+        draw_batch.print((SIDEBAR_WIDTH, 12).into(), "┤");
 
         draw_batch.submit(0).unwrap();
     }

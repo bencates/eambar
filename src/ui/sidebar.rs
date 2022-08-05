@@ -1,38 +1,73 @@
 use super::{FULL_PAINT, SIDEBAR_WIDTH};
 use crate::prelude::*;
 
-const STATS_ORIGIN: Point = Point::constant(2, 2);
-const INVENTORY_ORIGIN: Point = Point::constant(2, 8);
+const PLAYER_STATS_ORIGIN: Point = Point::constant(2, 2);
+const TARGET_STATS_ORIGIN: Point = Point::constant(2, 8);
+const INVENTORY_ORIGIN: Point = Point::constant(2, 14);
 const WIDTH: i32 = SIDEBAR_WIDTH - 3;
 
 pub struct RenderPlayerStatsSystem;
 
 impl<'a> System<'a> for RenderPlayerStatsSystem {
-    type SystemData = (ReadExpect<'a, Entity>, ReadStorage<'a, CharacterSheet>);
+    type SystemData = (
+        ReadExpect<'a, Entity>,
+        ReadStorage<'a, CharacterSheet>,
+        ReadStorage<'a, Target>,
+        ReadStorage<'a, Name>,
+        ReadStorage<'a, Appearance>,
+    );
 
-    fn run(&mut self, (player, character_sheets): Self::SystemData) {
+    fn run(&mut self, (player, character_sheets, targets, names, appearances): Self::SystemData) {
         let mut draw_batch = DrawBatch::new();
 
-        // for (_, player_character) in (&players, &character_sheets).join()
         let player_character = character_sheets.get(*player).unwrap();
 
         let (hp, max_hp) = player_character.hp();
 
         let health = format!("{} / {}", hp, max_hp);
-        let health_x = STATS_ORIGIN.x + WIDTH - health.len() as i32;
+        let health_x = PLAYER_STATS_ORIGIN.x + WIDTH - health.len() as i32;
         draw_batch.print_color(
-            (health_x, STATS_ORIGIN.y).into(),
+            (health_x, PLAYER_STATS_ORIGIN.y).into(),
             &health,
             ColorPair::new(YELLOW, BLACK),
         );
 
         draw_batch.bar_horizontal(
-            (STATS_ORIGIN.x, STATS_ORIGIN.y + 2).into(),
+            (PLAYER_STATS_ORIGIN.x, PLAYER_STATS_ORIGIN.y + 2).into(),
             WIDTH,
             hp,
             max_hp,
             ColorPair::new(RED, BLACK),
         );
+
+        if let Some(&Target(target)) = targets.get(*player) {
+            if let (Some(name), Some(appearance)) = (names.get(target), appearances.get(target)) {
+                let mut text = TextBuilder::empty();
+                full_name(&mut text, name, appearance);
+
+                let mut text_block =
+                    TextBlock::new(TARGET_STATS_ORIGIN.x, TARGET_STATS_ORIGIN.y, WIDTH, 1);
+                text_block.print(&text).unwrap();
+                text_block.render_to_draw_batch(&mut draw_batch);
+            }
+
+            if let Some(target_character) = character_sheets.get(target) {
+                let (hp, max_hp) = target_character.hp();
+
+                draw_batch.bar_horizontal(
+                    (TARGET_STATS_ORIGIN.x, TARGET_STATS_ORIGIN.y + 2).into(),
+                    WIDTH,
+                    hp,
+                    max_hp,
+                    ColorPair::new(RED, BLACK),
+                );
+            }
+        } else {
+            draw_batch.print_centered_at(
+                TARGET_STATS_ORIGIN + Point::new(SIDEBAR_WIDTH / 2, 1),
+                "No Target",
+            );
+        }
 
         draw_batch.submit(2 * FULL_PAINT).unwrap();
     }
@@ -55,13 +90,9 @@ impl<'a> System<'a> for RenderInventorySystem {
         let labels = (b'A'..=b'Z').map(|label| label as char);
 
         for (&item, label) in player_inventory.0.iter().zip(labels) {
-            if let (Some(name), Some(Appearance { color, glyph, .. })) =
-                (names.get(item), appearances.get(item))
-            {
-                text.fg(WHITE).append(&format!("{label}: ("));
-                text.fg(color.fg).append(&glyph.to_string());
-                text.fg(WHITE).append(") ");
-                text.fg(color.fg).append(&name.to_string());
+            if let (Some(name), Some(appearance)) = (names.get(item), appearances.get(item)) {
+                text.fg(WHITE).append(&format!("{label}: "));
+                full_name(&mut text, name, appearance);
                 text.ln();
             }
         }
@@ -74,4 +105,11 @@ impl<'a> System<'a> for RenderInventorySystem {
 
         draw_batch.submit(2 * FULL_PAINT).unwrap();
     }
+}
+
+fn full_name(text: &mut TextBuilder, name: &Name, Appearance { color, glyph, .. }: &Appearance) {
+    text.fg(WHITE).append("(");
+    text.fg(color.fg).append(&glyph.to_string());
+    text.fg(WHITE).append(") ");
+    text.fg(color.fg).append(&name.to_string());
 }
