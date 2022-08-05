@@ -8,6 +8,7 @@ use crate::{
     map::IndexMapSystem,
     player_turn,
     prelude::*,
+    target::ClearTargetSystem,
     ui::{
         self, RenderGameLogSystem, RenderInventorySystem, RenderMapSystem, RenderPlayerStatsSystem,
         RenderUILayoutSystem,
@@ -63,24 +64,21 @@ impl GameEngine {
                 "visibility",
                 &["movement"],
             )
-            .with(DeathSystem, "maintain_character_sheet", &["melee_combat"])
+            .with(DeathSystem, "death", &["melee_combat"])
             .with(
                 PlayerInventorySystem,
                 "player_inventory",
                 &["item_pickup", "item_use"],
             )
+            .with(ClearTargetSystem, "clear_target", &["visibility", "death"])
             .with(
                 IndexMapSystem,
                 "index_map",
-                &["movement", "visibility", "maintain_character_sheet"],
+                &["movement", "visibility", "death"],
             )
             .with(RenderUILayoutSystem, "render_ui_layout", &[])
             .with(RenderMapSystem, "render_map", &["index_map"])
-            .with(
-                RenderPlayerStatsSystem,
-                "render_stats",
-                &["maintain_character_sheet"],
-            )
+            .with(RenderPlayerStatsSystem, "render_stats", &["death"])
             .with(
                 RenderInventorySystem,
                 "render_inventory",
@@ -89,13 +87,12 @@ impl GameEngine {
             .with(
                 RenderGameLogSystem,
                 "render_game_log",
-                &["item_pickup", "melee_combat", "maintain_character_sheet"],
+                &["item_pickup", "melee_combat", "death"],
             )
             .build();
 
         dispatcher.setup(&mut world);
         world.register::<Item>();
-        world.register::<Target>();
 
         world.insert(RandomNumberGenerator::new());
 
