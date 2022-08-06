@@ -41,7 +41,8 @@ fn attack_or_move(world: &mut World, direction: Direction) -> RunState {
 
     if let Some(target) = map[dest].entity(&character_sheets) {
         TargetingData::fetch(world).set_target(player, Some(target));
-        intents.wants_to_melee(player, target);
+        // TODO: maybe check if target in range?
+        intents.wants_to_use(player, target);
     } else {
         if !is_legal_move(&map, dest) {
             log::debug!("Movement blocked");

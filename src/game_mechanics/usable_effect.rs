@@ -22,6 +22,7 @@ pub struct ItemUseSystem;
 impl<'a> System<'a> for ItemUseSystem {
     type SystemData = (
         Entities<'a>,
+        ReadStorage<'a, Item>,
         WriteStorage<'a, Durability>,
         WriteStorage<'a, BeingUsed>,
         ReadStorage<'a, DealsDamage>,
@@ -35,6 +36,7 @@ impl<'a> System<'a> for ItemUseSystem {
         &mut self,
         (
             entities,
+            item_types,
             mut durabilities,
             mut item_use_intents,
             deals_damage,
@@ -44,8 +46,9 @@ impl<'a> System<'a> for ItemUseSystem {
             mut game_log,
         ): Self::SystemData,
     ) {
-        for (item, &BeingUsed(target), item_name, damage, healing) in (
+        for (item, item_type, &BeingUsed(target), item_name, damage, healing) in (
             &entities,
+            item_types.maybe(),
             &item_use_intents,
             &names,
             deals_damage.maybe(),
@@ -70,11 +73,13 @@ impl<'a> System<'a> for ItemUseSystem {
                 }
             }
 
-            // Removing the inventory marker clears the entity from the player's
-            // inventory immediately. All other components will be removed
-            // automatically after the turn.
-            in_inventories.remove(item).unwrap();
-            entities.delete(item).unwrap();
+            if item_type == Some(&Item::Consumable) {
+                // Removing the inventory marker clears the entity from the player's
+                // inventory immediately. All other components will be removed
+                // automatically after the turn.
+                in_inventories.remove(item).unwrap();
+                entities.delete(item).unwrap();
+            }
         }
 
         item_use_intents.clear();

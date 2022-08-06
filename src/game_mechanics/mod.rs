@@ -1,16 +1,14 @@
 mod durability;
 mod field_of_view;
 mod inventory;
-mod item;
-mod melee_combat;
 mod movement;
+mod usable_effect;
 
 pub use durability::*;
 pub use field_of_view::*;
 pub use inventory::*;
-pub use item::*;
-pub use melee_combat::*;
 pub use movement::*;
+pub use usable_effect::*;
 
 use crate::{ai::MonsterAI, map::IndexMapSystem, prelude::*, target::ClearTargetSystem};
 
@@ -20,9 +18,8 @@ pub fn dispatcher<'a, 'b>(world: &mut World) -> Dispatcher<'a, 'b> {
         .with(MovementSystem, "movement", &["monster_ai"])
         .with(ItemPickupSystem, "item_pickup", &[])
         .with(ItemUseSystem, "item_use", &[])
-        .with(MeleeCombatSystem, "melee_combat", &["monster_ai"])
         .with(VisibilitySystem::new(world), "visibility", &["movement"])
-        .with(DeathSystem, "death", &["melee_combat"])
+        .with(DeathSystem, "death", &["item_use"])
         .with(
             PlayerInventorySystem,
             "player_inventory",
@@ -40,7 +37,6 @@ pub fn dispatcher<'a, 'b>(world: &mut World) -> Dispatcher<'a, 'b> {
 #[derive(SystemData)]
 pub struct Intents<'a> {
     wants_to_move: WriteStorage<'a, WantsToMove>,
-    wants_to_melee: WriteStorage<'a, WantsToMelee>,
     wants_to_pick_up: WriteStorage<'a, WantsToPickUp>,
     being_used: WriteStorage<'a, BeingUsed>,
 }
@@ -50,12 +46,6 @@ impl<'a> Intents<'a> {
         self.wants_to_move
             .insert(entity, WantsToMove(dest))
             .expect("could not queue move intent");
-    }
-
-    pub fn wants_to_melee(&mut self, attacker: Entity, target: Entity) {
-        self.wants_to_melee
-            .insert(attacker, WantsToMelee(target))
-            .expect("could not queue melee attack intent");
     }
 
     pub fn wants_to_pick_up(&mut self, recipient: Entity, item: Entity) {

@@ -19,16 +19,17 @@ pub struct Player;
 #[storage(NullStorage)]
 pub struct Monster;
 
-/// Marker trait for monsters.
-#[derive(Component, Default)]
-#[storage(NullStorage)]
-pub struct Item;
+#[derive(Component, PartialEq)]
+pub enum Item {
+    Consumable,
+}
 
 pub fn player(entity: EntityBuilder) -> EntityBuilder {
     entity
         .with(Player)
         .with(Appearance::player())
         .with(Durability::new(30, 2))
+        .with(Usable::OnTarget { range: 1 })
         .with(DealsDamage(5))
         .with(Viewshed::new(25))
 }
@@ -41,6 +42,7 @@ pub mod monster {
             .with(Monster)
             .with(Appearance::monster("Infected Crewmember", 'z', RED))
             .with(Durability::new(16, 1))
+            .with(Usable::OnTarget { range: 1 })
             .with(DealsDamage(4))
             .with(Viewshed::new(25))
             .with(BlocksTile)
@@ -51,6 +53,7 @@ pub mod monster {
             .with(Monster)
             .with(Appearance::monster("Alien Hatchling", 'h', RED))
             .with(Durability::new(16, 1))
+            .with(Usable::OnTarget { range: 1 })
             .with(DealsDamage(4))
             .with(Viewshed::new(25))
             .with(BlocksTile)
@@ -62,7 +65,7 @@ mod item {
 
     pub fn repair_kit(entity: EntityBuilder) -> EntityBuilder {
         entity
-            .with(Item)
+            .with(Item::Consumable)
             .with(Appearance::item("Repair Kit", 'δ', ORANGE))
             .with(Usable::OnSelf)
             .with(ProvidesHealing(8))
@@ -70,7 +73,7 @@ mod item {
 
     pub fn grenade(entity: EntityBuilder) -> EntityBuilder {
         entity
-            .with(Item)
+            .with(Item::Consumable)
             .with(Appearance::item("Grenade", '*', ORANGE)) // FIXME: better glyph
             .with(Usable::OnTarget { range: 6 })
             .with(DealsDamage(9))
