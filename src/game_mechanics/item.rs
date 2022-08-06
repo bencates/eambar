@@ -22,7 +22,7 @@ pub struct ItemUseSystem;
 impl<'a> System<'a> for ItemUseSystem {
     type SystemData = (
         Entities<'a>,
-        WriteStorage<'a, CharacterSheet>,
+        WriteStorage<'a, Durability>,
         WriteStorage<'a, BeingUsed>,
         ReadStorage<'a, DealsDamage>,
         ReadStorage<'a, ProvidesHealing>,
@@ -35,7 +35,7 @@ impl<'a> System<'a> for ItemUseSystem {
         &mut self,
         (
             entities,
-            mut character_sheets,
+            mut durabilities,
             mut item_use_intents,
             deals_damage,
             provides_healing,
@@ -53,17 +53,17 @@ impl<'a> System<'a> for ItemUseSystem {
         )
             .join()
         {
-            if let Some(character_sheet) = character_sheets.get_mut(target) {
+            if let Some(durability) = durabilities.get_mut(target) {
                 if let Some(&DealsDamage(raw_damage)) = damage {
-                    let blocked_damage = character_sheet.block_damage(raw_damage);
-                    character_sheet.apply_damage(blocked_damage);
+                    let blocked_damage = durability.block_damage(raw_damage);
+                    durability.apply_damage(blocked_damage);
                     if let Some(target_name) = names.get(target) {
                         game_log.damage(item_name, target_name, blocked_damage);
                     }
                 }
 
                 if let Some(&ProvidesHealing(amount)) = healing {
-                    character_sheet.heal(amount);
+                    durability.heal(amount);
                     if let Some(target_name) = names.get(target) {
                         game_log.healing(item_name, target_name, amount);
                     }

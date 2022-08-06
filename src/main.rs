@@ -18,7 +18,7 @@ mod prelude {
         engine::RunState,
         entity::{Item, Monster, Player},
         game_mechanics::{
-            CharacterSheet, DealsDamage, Intents, Inventory, ProvidesHealing, Usable, Viewshed,
+            DealsDamage, Durability, Intents, Inventory, ProvidesHealing, Usable, Viewshed,
         },
         map::{BlocksTile, Coordinate, Direction, Map},
         target::{Target, TargetingData},

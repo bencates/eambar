@@ -35,7 +35,7 @@ fn attack_or_move(world: &mut World, direction: Direction) -> RunState {
     let player = *world.fetch::<Entity>();
     let pos = *world.read_component::<Coordinate>().get(player).unwrap();
     let mut intents = Intents::fetch(world);
-    let character_sheets = world.read_component::<CharacterSheet>();
+    let character_sheets = world.read_component::<Durability>();
 
     let dest = pos + direction;
 

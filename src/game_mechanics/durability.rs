@@ -1,19 +1,17 @@
 use crate::prelude::*;
 
 #[derive(Component)]
-pub struct CharacterSheet {
+pub struct Durability {
     hp: i32,
     max_hp: i32,
-    power: i32,
     defense: i32,
 }
 
-impl CharacterSheet {
-    pub fn new(hp: i32, power: i32, defense: i32) -> Self {
+impl Durability {
+    pub fn new(hp: i32, defense: i32) -> Self {
         Self {
             hp,
             max_hp: hp,
-            power,
             defense,
         }
     }
@@ -24,10 +22,6 @@ impl CharacterSheet {
 
     pub fn is_alive(&self) -> bool {
         self.hp > 0
-    }
-
-    pub fn melee_damage(&self) -> i32 {
-        self.power
     }
 
     pub fn block_damage(&self, raw_damage: i32) -> i32 {
@@ -50,21 +44,21 @@ impl<'a> System<'a> for DeathSystem {
         Entities<'a>,
         ReadStorage<'a, Player>,
         ReadStorage<'a, Appearance>,
-        WriteStorage<'a, CharacterSheet>,
+        WriteStorage<'a, Durability>,
         WriteStorage<'a, Coordinate>,
         Write<'a, GameLog>,
     );
 
     fn run(
         &mut self,
-        (entities, players, names, mut character_sheets, mut positions, mut game_log): Self::SystemData,
+        (entities, players, names, mut durabilities, mut positions, mut game_log): Self::SystemData,
     ) {
-        for (entity, appearance, character) in (&entities, &names, &mut character_sheets).join() {
-            if !character.is_alive() {
+        for (entity, appearance, durability) in (&entities, &names, &mut durabilities).join() {
+            if !durability.is_alive() {
                 if players.contains(entity) {
                     // TODO: handle player death
                     game_log.player_death();
-                    character.hp = character.max_hp;
+                    durability.hp = durability.max_hp;
                 } else {
                     game_log.death(appearance);
 

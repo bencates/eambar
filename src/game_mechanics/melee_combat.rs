@@ -12,33 +12,36 @@ pub struct MeleeCombatSystem;
 impl<'a> System<'a> for MeleeCombatSystem {
     type SystemData = (
         ReadStorage<'a, Appearance>,
-        WriteStorage<'a, CharacterSheet>,
+        ReadStorage<'a, DealsDamage>,
+        WriteStorage<'a, Durability>,
         WriteStorage<'a, WantsToMelee>,
         Write<'a, GameLog>,
     );
 
     fn run(
         &mut self,
-        (appearances, mut character_sheets, mut melee_intents, mut game_log): Self::SystemData,
+        (appearances, damages, mut durabilities, mut melee_intents, mut game_log): Self::SystemData,
     ) {
         let mut damage_taken = ChangeSet::new();
 
-        for (attacker_appearance, attacker, target_entity, target_name, target) in
-            (&appearances, &character_sheets, &melee_intents)
+        for (attacker_appearance, attacker_damage, _, target_entity, target_name, target) in
+            (&appearances, &damages, &durabilities, &melee_intents)
                 .join()
-                .filter_map(|(attacker_name, attacker, &WantsToMelee(target_entity))| {
-                    Some((
-                        attacker_name,
-                        attacker,
-                        target_entity,
-                        appearances.get(target_entity)?,
-                        character_sheets.get(target_entity)?,
-                    ))
-                })
-                .filter(|(_, attacker, _, _, target)| attacker.is_alive() && target.is_alive())
+                .filter_map(
+                    |(attacker_name, attacker_damage, attacker, &WantsToMelee(target_entity))| {
+                        Some((
+                            attacker_name,
+                            attacker_damage,
+                            attacker,
+                            target_entity,
+                            appearances.get(target_entity)?,
+                            durabilities.get(target_entity)?,
+                        ))
+                    },
+                )
+                .filter(|(_, _, attacker, _, _, target)| attacker.is_alive() && target.is_alive())
         {
-            let raw_damage = attacker.melee_damage();
-            let damage = target.block_damage(raw_damage);
+            let damage = target.block_damage(attacker_damage.0);
 
             game_log.damage(attacker_appearance, target_name, damage);
 
@@ -47,7 +50,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
             }
         }
 
-        for (&damage, target) in (&damage_taken, &mut character_sheets).join() {
+        for (&damage, target) in (&damage_taken, &mut durabilities).join() {
             target.apply_damage(damage);
         }
 

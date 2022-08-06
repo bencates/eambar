@@ -1,11 +1,11 @@
-mod character_sheet;
+mod durability;
 mod field_of_view;
 mod inventory;
 mod item;
 mod melee_combat;
 mod movement;
 
-pub use character_sheet::*;
+pub use durability::*;
 pub use field_of_view::*;
 pub use inventory::*;
 pub use item::*;

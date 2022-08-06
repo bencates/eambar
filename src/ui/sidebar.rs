@@ -11,17 +11,17 @@ pub struct RenderPlayerStatsSystem;
 impl<'a> System<'a> for RenderPlayerStatsSystem {
     type SystemData = (
         ReadExpect<'a, Entity>,
-        ReadStorage<'a, CharacterSheet>,
+        ReadStorage<'a, Durability>,
         ReadStorage<'a, Target>,
         ReadStorage<'a, Appearance>,
     );
 
-    fn run(&mut self, (player, character_sheets, targets, appearances): Self::SystemData) {
+    fn run(&mut self, (player, durabilities, targets, appearances): Self::SystemData) {
         let mut draw_batch = DrawBatch::new();
 
-        let player_character = character_sheets.get(*player).unwrap();
+        let player_durability = durabilities.get(*player).unwrap();
 
-        let (hp, max_hp) = player_character.hp();
+        let (hp, max_hp) = player_durability.hp();
 
         let health = format!("{} / {}", hp, max_hp);
         let health_x = PLAYER_STATS_ORIGIN.x + WIDTH - health.len() as i32;
@@ -50,8 +50,8 @@ impl<'a> System<'a> for RenderPlayerStatsSystem {
                 text_block.render_to_draw_batch(&mut draw_batch);
             }
 
-            if let Some(target_character) = character_sheets.get(target) {
-                let (hp, max_hp) = target_character.hp();
+            if let Some(target_durability) = durabilities.get(target) {
+                let (hp, max_hp) = target_durability.hp();
 
                 draw_batch.bar_horizontal(
                     (TARGET_STATS_ORIGIN.x, TARGET_STATS_ORIGIN.y + 2).into(),

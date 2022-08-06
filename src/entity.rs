@@ -28,7 +28,8 @@ pub fn player(entity: EntityBuilder) -> EntityBuilder {
     entity
         .with(Player)
         .with(Appearance::player())
-        .with(CharacterSheet::new(30, 5, 2))
+        .with(Durability::new(30, 2))
+        .with(DealsDamage(5))
         .with(Viewshed::new(25))
 }
 
@@ -39,7 +40,8 @@ pub mod monster {
         entity
             .with(Monster)
             .with(Appearance::monster("Infected Crewmember", 'z', RED))
-            .with(CharacterSheet::new(16, 4, 1))
+            .with(Durability::new(16, 1))
+            .with(DealsDamage(4))
             .with(Viewshed::new(25))
             .with(BlocksTile)
     }
@@ -48,7 +50,8 @@ pub mod monster {
         entity
             .with(Monster)
             .with(Appearance::monster("Alien Hatchling", 'h', RED))
-            .with(CharacterSheet::new(16, 4, 1))
+            .with(Durability::new(16, 1))
+            .with(DealsDamage(4))
             .with(Viewshed::new(25))
             .with(BlocksTile)
     }
@@ -70,6 +73,6 @@ mod item {
             .with(Item)
             .with(Appearance::item("Grenade", '*', ORANGE)) // FIXME: better glyph
             .with(Usable::OnTarget { range: 6 })
-            .with(DealsDamage(8))
+            .with(DealsDamage(9))
     }
 }
