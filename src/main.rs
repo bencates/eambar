@@ -17,7 +17,9 @@ mod prelude {
     pub use crate::{
         engine::RunState,
         entity::{Item, Monster, Player},
-        game_mechanics::{CharacterSheet, Intents, Inventory, ProvidesHealing, Viewshed},
+        game_mechanics::{
+            CharacterSheet, DealsDamage, Intents, Inventory, ProvidesHealing, Usable, Viewshed,
+        },
         map::{BlocksTile, Coordinate, Direction, Map},
         target::{Target, TargetingData},
         ui::{Appearance, GameLog},

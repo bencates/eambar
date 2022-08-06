@@ -42,7 +42,7 @@ pub struct Intents<'a> {
     wants_to_move: WriteStorage<'a, WantsToMove>,
     wants_to_melee: WriteStorage<'a, WantsToMelee>,
     wants_to_pick_up: WriteStorage<'a, WantsToPickUp>,
-    wants_to_use: WriteStorage<'a, WantsToUse>,
+    being_used: WriteStorage<'a, BeingUsed>,
 }
 
 impl<'a> Intents<'a> {
@@ -64,9 +64,9 @@ impl<'a> Intents<'a> {
             .expect("could not queue item pickup intent");
     }
 
-    pub fn wants_to_use(&mut self, user: Entity, item: Entity) {
-        self.wants_to_use
-            .insert(user, WantsToUse(item))
+    pub fn wants_to_use(&mut self, item: Entity, target: Entity) {
+        self.being_used
+            .insert(item, BeingUsed(target))
             .expect("could not queue item use intent");
     }
 }

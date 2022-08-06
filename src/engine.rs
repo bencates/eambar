@@ -46,6 +46,7 @@ impl GameEngine {
         dispatcher.setup(&mut world);
         ui_dispatcher.setup(&mut world);
         world.register::<Item>();
+        world.register::<Usable>();
 
         world.insert(RandomNumberGenerator::new());
 

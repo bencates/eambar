@@ -2,10 +2,11 @@ use crate::prelude::*;
 
 pub type SpawnBuilder = fn(EntityBuilder) -> EntityBuilder;
 
-pub const SPAWN_TABLE: [SpawnBuilder; 3] = [
+pub const SPAWN_TABLE: [SpawnBuilder; 4] = [
     monster::infected_crewmember,
     monster::alien_hatchling,
     item::repair_kit,
+    item::grenade,
 ];
 
 /// Marker trait for the player entity.
@@ -60,6 +61,15 @@ mod item {
         entity
             .with(Item)
             .with(Appearance::item("Repair Kit", 'δ', ORANGE))
+            .with(Usable::OnSelf)
             .with(ProvidesHealing(8))
+    }
+
+    pub fn grenade(entity: EntityBuilder) -> EntityBuilder {
+        entity
+            .with(Item)
+            .with(Appearance::item("Grenade", '*', ORANGE)) // FIXME: better glyph
+            .with(Usable::OnTarget { range: 6 })
+            .with(DealsDamage(8))
     }
 }

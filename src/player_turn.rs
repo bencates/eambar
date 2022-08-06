@@ -77,11 +77,45 @@ fn use_item(world: &mut World, index: usize) -> RunState {
     let player = *world.fetch::<Entity>();
     let mut intents = Intents::fetch(world);
     let inventory = world.fetch::<Inventory>();
+    let usables = world.read_component::<Usable>();
+    let positions = world.read_component::<Coordinate>();
+    let targets = world.read_component::<Target>();
 
     if let Some(&item) = inventory.0.get(index) {
-        intents.wants_to_use(player, item);
+        match usables.get(item) {
+            Some(Usable::OnSelf) => {
+                intents.wants_to_use(item, player);
 
-        RunState::Running
+                RunState::Running
+            }
+            Some(Usable::OnTarget { range }) => {
+                if let Some(&Target(target)) = targets.get(player) {
+                    if let (Some(player_pos), Some(target_pos)) =
+                        (positions.get(player), positions.get(target))
+                    {
+                        if player_pos.distance(*target_pos) <= *range {
+                            log::debug!("Using {item:?} on {target:?}");
+                            intents.wants_to_use(item, target);
+                            RunState::Running
+                        } else {
+                            log::debug!("Can't use {item:?}; target out of range");
+                            RunState::AwaitingInput
+                        }
+                    } else {
+                        log::debug!("Can't use {item:?}; invalid target");
+                        RunState::AwaitingInput
+                    }
+                } else {
+                    log::debug!("Can't use {item:?}; no target");
+                    RunState::AwaitingInput
+                }
+            }
+            None => {
+                log::debug!("Item {item:?} is not usable");
+
+                RunState::AwaitingInput
+            }
+        }
     } else {
         let label = (b'A' + index as u8) as char;
         log::debug!("No item \"{label}\"");
