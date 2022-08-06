@@ -18,15 +18,22 @@ impl Default for GameLog {
 }
 
 impl GameLog {
-    pub fn attack(&mut self, attacker: &Appearance, target: &Appearance, damage: i32) {
+    pub fn damage(&mut self, source: &Appearance, target: &Appearance, damage: i32) {
         self.log(|text| {
             if damage == 0 {
-                log::info!("{attacker} is unable to hurt {target}.");
-                text.append(&format!("{attacker} is unable to hurt {target}."));
+                log::info!("{source} is unable to hurt {target}.");
+                text.append(&format!("{source} is unable to hurt {target}."));
             } else {
-                log::info!("{attacker} hits {target} for {damage} damage.");
-                text.append(&format!("{attacker} hits {target} for {damage} damage."));
+                log::info!("{source} deals {damage} damage to {target}");
+                text.append(&format!("{source} deals {damage} damage to {target}"));
             }
+        });
+    }
+
+    pub fn healing(&mut self, source: &Appearance, target: &Appearance, amount: i32) {
+        log::info!("{source} heals {amount} damage for {target}");
+        self.log(|text| {
+            text.append(&format!("{source} heals {amount} damage for {target}"));
         });
     }
 

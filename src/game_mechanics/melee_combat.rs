@@ -40,7 +40,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
             let raw_damage = attacker.melee_damage();
             let damage = target.block_damage(raw_damage);
 
-            game_log.attack(attacker_appearance, target_name, damage);
+            game_log.damage(attacker_appearance, target_name, damage);
 
             if damage > 0 {
                 damage_taken.add(target_entity, damage);

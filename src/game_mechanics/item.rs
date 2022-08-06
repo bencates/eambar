@@ -27,6 +27,8 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, DealsDamage>,
         ReadStorage<'a, ProvidesHealing>,
         WriteStorage<'a, InInventory>,
+        ReadStorage<'a, Appearance>,
+        Write<'a, GameLog>,
     );
 
     fn run(
@@ -38,11 +40,14 @@ impl<'a> System<'a> for ItemUseSystem {
             deals_damage,
             provides_healing,
             mut in_inventories,
+            names,
+            mut game_log,
         ): Self::SystemData,
     ) {
-        for (item, &BeingUsed(target), damage, healing) in (
+        for (item, &BeingUsed(target), item_name, damage, healing) in (
             &entities,
             &item_use_intents,
+            &names,
             deals_damage.maybe(),
             provides_healing.maybe(),
         )
@@ -52,16 +57,22 @@ impl<'a> System<'a> for ItemUseSystem {
                 if let Some(&DealsDamage(raw_damage)) = damage {
                     let blocked_damage = character_sheet.block_damage(raw_damage);
                     character_sheet.apply_damage(blocked_damage);
+                    if let Some(target_name) = names.get(target) {
+                        game_log.damage(item_name, target_name, blocked_damage);
+                    }
                 }
 
                 if let Some(&ProvidesHealing(amount)) = healing {
                     character_sheet.heal(amount);
+                    if let Some(target_name) = names.get(target) {
+                        game_log.healing(item_name, target_name, amount);
+                    }
                 }
             }
 
-            // Removing the inventory marker clears the entity off the inventory
-            // immediately. All other components will be removed automatically
-            // after the turn.
+            // Removing the inventory marker clears the entity from the player's
+            // inventory immediately. All other components will be removed
+            // automatically after the turn.
             in_inventories.remove(item).unwrap();
             entities.delete(item).unwrap();
         }
