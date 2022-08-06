@@ -19,8 +19,8 @@ impl<'a> System<'a> for RenderUILayoutSystem {
             TERM_WIDTH - SIDEBAR_WIDTH - 1,
             TERM_HEIGHT - MAP_HEIGHT - 2,
         );
-        let player_stats_frame = Rect::with_size(0, 0, SIDEBAR_WIDTH, 6);
-        let target_stats_frame = Rect::with_size(0, 6, SIDEBAR_WIDTH, 6);
+        let player_stats_frame = Rect::with_size(0, 0, SIDEBAR_WIDTH, 7);
+        let target_stats_frame = Rect::with_size(0, 7, SIDEBAR_WIDTH, 7);
 
         let color = ColorPair::new(WHITE, BLACK);
 
@@ -35,10 +35,10 @@ impl<'a> System<'a> for RenderUILayoutSystem {
         draw_batch.print((SIDEBAR_WIDTH, MAP_HEIGHT + 1).into(), "├");
         draw_batch.print((TERM_WIDTH - 1, MAP_HEIGHT + 1).into(), "┤");
         draw_batch.print((SIDEBAR_WIDTH, TERM_HEIGHT - 1).into(), "┴");
-        draw_batch.print((0, 6).into(), "├");
-        draw_batch.print((SIDEBAR_WIDTH, 6).into(), "┤");
-        draw_batch.print((0, 12).into(), "├");
-        draw_batch.print((SIDEBAR_WIDTH, 12).into(), "┤");
+        draw_batch.print((0, 7).into(), "├");
+        draw_batch.print((SIDEBAR_WIDTH, 7).into(), "┤");
+        draw_batch.print((0, 14).into(), "├");
+        draw_batch.print((SIDEBAR_WIDTH, 14).into(), "┤");
 
         draw_batch.submit(0).unwrap();
     }

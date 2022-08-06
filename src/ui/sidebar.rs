@@ -2,8 +2,8 @@ use super::{FULL_PAINT, SIDEBAR_WIDTH};
 use crate::prelude::*;
 
 const PLAYER_STATS_ORIGIN: Point = Point::constant(2, 2);
-const TARGET_STATS_ORIGIN: Point = Point::constant(2, 8);
-const INVENTORY_ORIGIN: Point = Point::constant(2, 14);
+const TARGET_STATS_ORIGIN: Point = Point::constant(2, 9);
+const INVENTORY_ORIGIN: Point = Point::constant(2, 16);
 const WIDTH: i32 = SIDEBAR_WIDTH - 3;
 
 pub struct RenderPlayerStatsSystem;
@@ -21,23 +21,37 @@ impl<'a> System<'a> for RenderPlayerStatsSystem {
 
         let player_durability = durabilities.get(*player).unwrap();
 
-        let (hp, max_hp) = player_durability.hp();
+        let (health, max_health) = player_durability.health();
 
-        let health = format!("{} / {}", hp, max_hp);
-        let health_x = PLAYER_STATS_ORIGIN.x + WIDTH - health.len() as i32;
+        let health_text = match player_durability.shield() {
+            Some((shield, max_shield)) => format!("{health}+{shield} / {max_health}+{max_shield}"),
+            None => format!("{health} / {max_health}"),
+        };
+
+        let health_x = PLAYER_STATS_ORIGIN.x + WIDTH - health_text.len() as i32;
         draw_batch.print_color(
             (health_x, PLAYER_STATS_ORIGIN.y).into(),
-            &health,
+            &health_text,
             ColorPair::new(YELLOW, BLACK),
         );
 
         draw_batch.bar_horizontal(
             (PLAYER_STATS_ORIGIN.x, PLAYER_STATS_ORIGIN.y + 2).into(),
             WIDTH,
-            hp,
-            max_hp,
+            health,
+            max_health,
             ColorPair::new(RED, BLACK),
         );
+
+        if let Some((shield, max_shield)) = player_durability.shield() {
+            draw_batch.bar_horizontal(
+                (PLAYER_STATS_ORIGIN.x, PLAYER_STATS_ORIGIN.y + 3).into(),
+                WIDTH,
+                shield,
+                max_shield,
+                ColorPair::new(BLUE, BLACK),
+            );
+        }
 
         if let Some(&Target(target)) = targets.get(*player) {
             if let Some(appearance) = appearances.get(target) {
@@ -51,7 +65,7 @@ impl<'a> System<'a> for RenderPlayerStatsSystem {
             }
 
             if let Some(target_durability) = durabilities.get(target) {
-                let (hp, max_hp) = target_durability.hp();
+                let (hp, max_hp) = target_durability.health();
 
                 draw_batch.bar_horizontal(
                     (TARGET_STATS_ORIGIN.x, TARGET_STATS_ORIGIN.y + 2).into(),
@@ -60,10 +74,20 @@ impl<'a> System<'a> for RenderPlayerStatsSystem {
                     max_hp,
                     ColorPair::new(RED, BLACK),
                 );
+
+                if let Some((shield, max_shield)) = target_durability.shield() {
+                    draw_batch.bar_horizontal(
+                        (TARGET_STATS_ORIGIN.x, TARGET_STATS_ORIGIN.y + 3).into(),
+                        WIDTH,
+                        shield,
+                        max_shield,
+                        ColorPair::new(BLUE, BLACK),
+                    );
+                }
             }
         } else {
             draw_batch.print_centered_at(
-                TARGET_STATS_ORIGIN + Point::new(SIDEBAR_WIDTH / 2, 1),
+                TARGET_STATS_ORIGIN + Point::new(SIDEBAR_WIDTH / 2, 2),
                 "No Target",
             );
         }

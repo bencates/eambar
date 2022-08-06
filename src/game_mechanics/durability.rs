@@ -2,26 +2,34 @@ use crate::prelude::*;
 
 #[derive(Component)]
 pub struct Durability {
-    hp: i32,
-    max_hp: i32,
+    health: i32,
+    max_health: i32,
+    shield: i32,
+    max_shield: i32,
     defense: i32,
 }
 
 impl Durability {
-    pub fn new(hp: i32, defense: i32) -> Self {
+    pub fn new(health: i32, shield: i32, defense: i32) -> Self {
         Self {
-            hp,
-            max_hp: hp,
+            health,
+            max_health: health,
+            shield,
+            max_shield: shield,
             defense,
         }
     }
 
-    pub fn hp(&self) -> (i32, i32) {
-        (self.hp, self.max_hp)
+    pub fn health(&self) -> (i32, i32) {
+        (self.health, self.max_health)
+    }
+
+    pub fn shield(&self) -> Option<(i32, i32)> {
+        (self.max_shield > 0).then(|| (self.shield, self.max_shield))
     }
 
     pub fn is_alive(&self) -> bool {
-        self.hp > 0
+        self.health > 0
     }
 
     pub fn block_damage(&self, raw_damage: i32) -> i32 {
@@ -29,11 +37,11 @@ impl Durability {
     }
 
     pub fn heal(&mut self, healing: i32) {
-        self.hp = i32::min(self.max_hp, self.hp + healing);
+        self.health = i32::min(self.max_health, self.health + healing);
     }
 
     pub fn apply_damage(&mut self, damage: i32) {
-        self.hp -= damage;
+        self.health -= damage;
     }
 }
 
@@ -58,7 +66,7 @@ impl<'a> System<'a> for DeathSystem {
                 if players.contains(entity) {
                     // TODO: handle player death
                     game_log.player_death();
-                    durability.hp = durability.max_hp;
+                    durability.health = durability.max_health;
                 } else {
                     game_log.death(appearance);
 
