@@ -40,6 +40,7 @@ fn attack_or_move(world: &mut World, direction: Direction) -> RunState {
     let dest = pos + direction;
 
     if let Some(target) = map[dest].entity(&character_sheets) {
+        TargetingData::fetch(world).set_target(player, Some(target));
         intents.wants_to_melee(player, target);
     } else {
         if !is_legal_move(&map, dest) {
@@ -89,12 +90,12 @@ fn use_item(world: &mut World, index: usize) -> RunState {
     }
 }
 
-fn cycle_target(world: &mut World, _rev: bool) -> RunState {
+fn cycle_target(world: &mut World, rev: bool) -> RunState {
     let viewsheds = world.read_component::<Viewshed>();
-    let mut targets = world.write_component::<Target>();
     let entities = world.entities();
     let monsters = world.read_component::<Monster>();
     let positions = world.read_component::<Coordinate>();
+    let mut targeting_data = TargetingData::fetch(world);
 
     let player = *world.fetch::<Entity>();
     let viewshed = viewsheds.get(player).unwrap();
@@ -105,26 +106,13 @@ fn cycle_target(world: &mut World, _rev: bool) -> RunState {
         .map(|(entity, _, _)| entity)
         .collect();
 
-    if let Some(current_target) = targets.get_mut(player) {
-        let new_target = potential_targets
-            .iter()
-            .position(|&target| current_target.0 == target)
-            .and_then(|idx| potential_targets.get(idx + 1));
+    let new_target = if rev {
+        targeting_data.prev_target(player, &potential_targets)
+    } else {
+        targeting_data.next_target(player, &potential_targets)
+    };
 
-        match new_target {
-            Some(new_target) => {
-                log::debug!("Targeting {new_target:?}");
-                current_target.0 = *new_target;
-            }
-            None => {
-                log::debug!("Clearing target");
-                targets.remove(player).unwrap();
-            }
-        }
-    } else if let Some(&new_target) = potential_targets.first() {
-        log::debug!("Targeting {new_target:?}");
-        targets.insert(player, Target(new_target)).unwrap();
-    }
+    targeting_data.set_target(player, new_target);
 
     RunState::AwaitingInput
 }

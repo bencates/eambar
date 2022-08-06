@@ -3,6 +3,53 @@ use crate::prelude::*;
 #[derive(Component)]
 pub struct Target(pub Entity);
 
+#[derive(SystemData)]
+pub struct TargetingData<'a> {
+    targets: WriteStorage<'a, Target>,
+}
+
+impl<'a> TargetingData<'a> {
+    pub fn prev_target(&self, entity: Entity, potential_targets: &[Entity]) -> Option<Entity> {
+        if let Some(&Target(curr)) = self.targets.get(entity) {
+            potential_targets
+                .iter()
+                .position(|&e| curr == e)
+                .and_then(|idx| idx.checked_sub(1))
+                .and_then(|idx| potential_targets.get(idx))
+        } else {
+            potential_targets.last()
+        }
+        .copied()
+    }
+
+    pub fn next_target(&self, entity: Entity, potential_targets: &[Entity]) -> Option<Entity> {
+        if let Some(&Target(curr)) = self.targets.get(entity) {
+            potential_targets
+                .iter()
+                .position(|&e| curr == e)
+                .and_then(|idx| potential_targets.get(idx + 1))
+        } else {
+            potential_targets.first()
+        }
+        .copied()
+    }
+
+    pub fn set_target(&mut self, entity: Entity, target_entity: Option<Entity>) {
+        match (self.targets.get_mut(entity), target_entity) {
+            (Some(current_target), Some(target_entity)) => {
+                current_target.0 = target_entity;
+            }
+            (None, Some(target_entity)) => {
+                self.targets.insert(entity, Target(target_entity)).unwrap();
+            }
+            (Some(_), None) => {
+                self.targets.remove(entity);
+            }
+            (None, None) => {}
+        };
+    }
+}
+
 pub struct ClearTargetSystem;
 
 impl<'a> System<'a> for ClearTargetSystem {
@@ -25,7 +72,6 @@ impl<'a> System<'a> for ClearTargetSystem {
             .collect();
 
         for entity in invalid_targets {
-            log::debug!("Clearing target for {entity:?}");
             targets.remove(entity).unwrap();
         }
     }
