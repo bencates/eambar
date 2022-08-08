@@ -7,17 +7,27 @@ pub struct Durability {
     shield: i32,
     max_shield: i32,
     defense: i32,
+    shield_defense: i32,
 }
 
 impl Durability {
-    pub fn new(health: i32, shield: i32, defense: i32) -> Self {
+    pub fn new(health: i32, defense: i32) -> Self {
         Self {
             health,
             max_health: health,
-            shield,
-            max_shield: shield,
+            shield: 0,
+            max_shield: 0,
             defense,
+            shield_defense: 0,
         }
+    }
+
+    pub fn with_shield(mut self, shield: i32, shield_defense: i32) -> Self {
+        self.shield = shield;
+        self.max_shield = shield;
+        self.shield_defense = shield_defense;
+
+        self
     }
 
     pub fn health(&self) -> (i32, i32) {
@@ -32,16 +42,30 @@ impl Durability {
         self.health > 0
     }
 
-    pub fn block_damage(&self, raw_damage: i32) -> i32 {
-        i32::max(0, raw_damage - self.defense)
+    /// Returns the amount actually healed
+    pub fn heal(&mut self, healing: i32) -> i32 {
+        let healing = i32::min(healing, self.max_health - self.health);
+        self.health += healing;
+
+        healing
     }
 
-    pub fn heal(&mut self, healing: i32) {
-        self.health = i32::min(self.max_health, self.health + healing);
-    }
+    /// Returns the amount of damage actually taken
+    pub fn take_damage(&mut self, damage: i32) -> i32 {
+        let (damage_to_shield, unshielded_damage) = if self.shield > 0 {
+            let blocked_damage = i32::max(0, damage - self.shield_defense);
+            let damage_to_shield = i32::min(blocked_damage, self.shield);
+            self.shield -= damage_to_shield;
 
-    pub fn apply_damage(&mut self, damage: i32) {
-        self.health -= damage;
+            (damage_to_shield, blocked_damage - damage_to_shield)
+        } else {
+            (0, damage)
+        };
+
+        let damage_to_health = i32::clamp(unshielded_damage - self.defense, 0, self.health);
+        self.health -= damage_to_health;
+
+        damage_to_shield + damage_to_health
     }
 }
 
@@ -77,5 +101,89 @@ impl<'a> System<'a> for DeathSystem {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    const EXAMPLE_DURABILITY: Durability = Durability {
+        health: 30,
+        max_health: 30,
+        shield: 10,
+        max_shield: 10,
+        defense: 2,
+        shield_defense: 1,
+    };
+
+    #[test]
+    fn cant_heal_past_max_health() {
+        for (healing, expected_healing_done, expected_health) in [
+            (0, 0, (28, 30)),
+            (1, 1, (29, 30)),
+            (2, 2, (30, 30)),
+            (3, 2, (30, 30)),
+        ] {
+            let mut durability = Durability {
+                health: 28,
+                ..EXAMPLE_DURABILITY
+            };
+
+            let healing_done = durability.heal(healing);
+
+            assert_eq!(healing_done, expected_healing_done);
+            assert_eq!(durability.health(), expected_health);
+        }
+    }
+
+    #[test]
+    fn deals_damage_through_shields_correctly() {
+        for (damage, expected_damage_taken, expected_health, expected_shield) in [
+            (0, 0, (30, 30), Some((2, 10))),
+            (1, 0, (30, 30), Some((2, 10))),
+            (2, 1, (30, 30), Some((1, 10))),
+            (3, 2, (30, 30), Some((0, 10))),
+            (4, 2, (30, 30), Some((0, 10))),
+            (5, 2, (30, 30), Some((0, 10))),
+            (6, 3, (29, 30), Some((0, 10))),
+            (99, 32, (0, 30), Some((0, 10))),
+        ] {
+            let mut durability = Durability {
+                shield: 2,
+                ..EXAMPLE_DURABILITY
+            };
+
+            let damage_taken = durability.take_damage(damage);
+
+            assert_eq!(damage_taken, expected_damage_taken);
+            assert_eq!(durability.health(), expected_health);
+            assert_eq!(durability.shield(), expected_shield);
+        }
+    }
+
+    #[test]
+    fn shield_defense_doesnt_apply_when_shield_is_broken_or_missing() {
+        let mut no_shield = Durability {
+            shield: 0,
+            max_shield: 0,
+            ..EXAMPLE_DURABILITY
+        };
+
+        let mut broken_shield = Durability {
+            shield: 0,
+            ..EXAMPLE_DURABILITY
+        };
+
+        let no_shield_damage_taken = no_shield.take_damage(3);
+        let broken_shield_damage_taken = broken_shield.take_damage(3);
+
+        assert_eq!(no_shield_damage_taken, 1);
+        assert_eq!(no_shield.health(), (29, 30));
+        assert_eq!(no_shield.shield(), None);
+
+        assert_eq!(broken_shield_damage_taken, 1);
+        assert_eq!(broken_shield.health(), (29, 30));
+        assert_eq!(broken_shield.shield(), Some((0, 10)));
     }
 }

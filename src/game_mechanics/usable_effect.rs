@@ -58,15 +58,14 @@ impl<'a> System<'a> for ItemUseSystem {
         {
             if let Some(durability) = durabilities.get_mut(target) {
                 if let Some(&DealsDamage(raw_damage)) = damage {
-                    let blocked_damage = durability.block_damage(raw_damage);
-                    durability.apply_damage(blocked_damage);
+                    let blocked_damage = durability.take_damage(raw_damage);
                     if let Some(target_name) = names.get(target) {
                         game_log.damage(item_name, target_name, blocked_damage);
                     }
                 }
 
                 if let Some(&ProvidesHealing(amount)) = healing {
-                    durability.heal(amount);
+                    let amount = durability.heal(amount);
                     if let Some(target_name) = names.get(target) {
                         game_log.healing(item_name, target_name, amount);
                     }
