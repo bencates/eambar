@@ -25,6 +25,8 @@ pub fn handle_input(ctx: &BTerm, world: &mut World) -> RunState {
 
             G => pick_up_item(world),
 
+            Escape => Quitting,
+
             _ => AwaitingInput,
         }
     })

@@ -9,6 +9,7 @@ pub enum RunState {
     NewGame,
     AwaitingInput,
     Running,
+    Quitting,
 }
 
 pub struct GameEngine {
@@ -29,6 +30,7 @@ impl GameState for GameEngine {
             }
             AwaitingInput => player_turn::handle_input(ctx, &mut self.world),
             Running => self.run(),
+            Quitting => return ctx.quit(),
         };
 
         self.ui_dispatcher.dispatch(&self.world);
