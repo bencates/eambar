@@ -8,6 +8,9 @@ pub struct Durability {
     max_shield: i32,
     defense: i32,
     shield_defense: i32,
+    took_damage: bool,
+    shield_regen: i32,
+    // TODO: broken_shield_cooldown: i32
 }
 
 impl Durability {
@@ -19,6 +22,8 @@ impl Durability {
             max_shield: 0,
             defense,
             shield_defense: 0,
+            shield_regen: 0,
+            took_damage: false,
         }
     }
 
@@ -26,6 +31,7 @@ impl Durability {
         self.shield = shield;
         self.max_shield = shield;
         self.shield_defense = shield_defense;
+        self.shield_regen = 5; // FIXME: don't hardcode
 
         self
     }
@@ -52,6 +58,8 @@ impl Durability {
 
     /// Returns the amount of damage actually taken
     pub fn take_damage(&mut self, damage: i32) -> i32 {
+        self.took_damage = true;
+
         let (damage_to_shield, unshielded_damage) = if self.shield > 0 {
             let blocked_damage = i32::max(0, damage - self.shield_defense);
             let damage_to_shield = i32::min(blocked_damage, self.shield);
@@ -66,6 +74,26 @@ impl Durability {
         self.health -= damage_to_health;
 
         damage_to_shield + damage_to_health
+    }
+}
+
+pub struct ShieldRegenSystem;
+
+impl<'a> System<'a> for ShieldRegenSystem {
+    type SystemData = WriteStorage<'a, Durability>;
+
+    fn run(&mut self, mut durabilities: Self::SystemData) {
+        for durability in (&mut durabilities).join() {
+            if durability.took_damage {
+                durability.took_damage = false;
+                continue;
+            }
+
+            durability.shield = i32::min(
+                durability.shield + durability.shield_regen,
+                durability.max_shield,
+            );
+        }
     }
 }
 
@@ -115,6 +143,8 @@ mod test {
         max_shield: 10,
         defense: 2,
         shield_defense: 1,
+        shield_regen: 5,
+        took_damage: false,
     };
 
     #[test]

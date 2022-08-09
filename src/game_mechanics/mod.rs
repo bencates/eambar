@@ -19,6 +19,7 @@ pub fn dispatcher<'a, 'b>(world: &mut World) -> Dispatcher<'a, 'b> {
         .with(ItemPickupSystem, "item_pickup", &[])
         .with(ItemUseSystem, "item_use", &[])
         .with(VisibilitySystem::new(world), "visibility", &["movement"])
+        .with(ShieldRegenSystem, "shield_regen", &["item_use"])
         .with(DeathSystem, "death", &["item_use"])
         .with(
             PlayerInventorySystem,
