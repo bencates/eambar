@@ -17,14 +17,14 @@ pub fn dispatcher<'a, 'b>(world: &mut World) -> Dispatcher<'a, 'b> {
         .with(MonsterAI, "monster_ai", &[])
         .with(MovementSystem, "movement", &["monster_ai"])
         .with(ItemPickupSystem, "item_pickup", &[])
-        .with(ItemUseSystem, "item_use", &[])
+        .with(EffectUseSystem, "effect_use", &[])
         .with(VisibilitySystem::new(world), "visibility", &["movement"])
-        .with(ShieldRegenSystem, "shield_regen", &["item_use"])
-        .with(DeathSystem, "death", &["item_use"])
+        .with(ShieldRegenSystem, "shield_regen", &["effect_use"])
+        .with(DeathSystem, "death", &["effect_use"])
         .with(
             PlayerInventorySystem,
             "player_inventory",
-            &["item_pickup", "item_use"],
+            &["item_pickup", "effect_use"],
         )
         .with(ClearTargetSystem, "clear_target", &["visibility", "death"])
         .with(
@@ -55,9 +55,9 @@ impl<'a> Intents<'a> {
             .expect("could not queue item pickup intent");
     }
 
-    pub fn wants_to_use(&mut self, item: Entity, target: Entity) {
+    pub fn wants_to_use(&mut self, effect: Entity, target: Entity) {
         self.being_used
-            .insert(item, BeingUsed(target))
+            .insert(effect, BeingUsed(target))
             .expect("could not queue item use intent");
     }
 }

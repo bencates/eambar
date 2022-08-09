@@ -17,9 +17,9 @@ pub struct DealsDamage(pub i32);
 #[derive(Component)]
 pub struct ProvidesHealing(pub i32);
 
-pub struct ItemUseSystem;
+pub struct EffectUseSystem;
 
-impl<'a> System<'a> for ItemUseSystem {
+impl<'a> System<'a> for EffectUseSystem {
     type SystemData = (
         Entities<'a>,
         ReadStorage<'a, Item>,
