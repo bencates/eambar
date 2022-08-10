@@ -1,4 +1,10 @@
-use crate::{game_mechanics, level::build_level, player_turn, prelude::*, ui};
+use crate::{
+    game_mechanics::{self, HasInitiative},
+    level::build_level,
+    player_turn,
+    prelude::*,
+    ui,
+};
 use RunState::*;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -61,9 +67,18 @@ impl GameEngine {
     }
 
     fn run(&mut self) -> RunState {
-        self.dispatcher.dispatch(&self.world);
-        self.world.maintain();
+        while !self.player_has_initiative() {
+            self.dispatcher.dispatch(&self.world);
+            self.world.maintain();
+        }
 
         AwaitingInput
+    }
+
+    fn player_has_initiative(&self) -> bool {
+        let player = *self.world.fetch::<Entity>();
+        let has_initiative = self.world.read_component::<HasInitiative>();
+
+        has_initiative.contains(player)
     }
 }

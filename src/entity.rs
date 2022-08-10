@@ -28,6 +28,10 @@ pub fn player(entity: EntityBuilder) -> EntityBuilder {
     entity
         .with(Player)
         .with(Appearance::player())
+        .with(Initiative {
+            current: 1,
+            speed: 6,
+        })
         .with(Durability::new(30, 2).with_shield(10, 1))
         .with(Usable::OnTarget { range: 1 })
         .with(DealsDamage(5))
@@ -41,6 +45,10 @@ pub mod monster {
         entity
             .with(Monster)
             .with(Appearance::monster("Infected Crewmember", 'z', RED))
+            .with(Initiative {
+                current: 2,
+                speed: 8,
+            })
             .with(Durability::new(16, 1))
             .with(Usable::OnTarget { range: 1 })
             .with(DealsDamage(4))
@@ -52,6 +60,10 @@ pub mod monster {
         entity
             .with(Monster)
             .with(Appearance::monster("Alien Hatchling", 'h', RED))
+            .with(Initiative {
+                current: 2,
+                speed: 4,
+            })
             .with(Durability::new(16, 1))
             .with(Usable::OnTarget { range: 1 })
             .with(DealsDamage(4))

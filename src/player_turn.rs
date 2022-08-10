@@ -1,4 +1,4 @@
-use crate::game_mechanics::is_legal_move;
+use crate::game_mechanics::{is_legal_move, HasInitiative};
 use crate::prelude::*;
 
 pub fn handle_input(ctx: &BTerm, world: &mut World) -> RunState {
@@ -45,6 +45,7 @@ fn attack_or_move(world: &mut World, direction: Direction) -> RunState {
         TargetingData::fetch(world).set_target(player, Some(target));
         // TODO: maybe check if target in range?
         intents.wants_to_use(player, target);
+        reset_initiative(world);
     } else {
         if !is_legal_move(&map, dest) {
             log::debug!("Movement blocked");
@@ -53,6 +54,7 @@ fn attack_or_move(world: &mut World, direction: Direction) -> RunState {
 
         log::debug!("Moving to {dest:?}");
         intents.wants_to_move(player, dest);
+        reset_initiative(world);
     }
 
     RunState::Running
@@ -67,6 +69,7 @@ fn pick_up_item(world: &mut World) -> RunState {
 
     if let Some(item) = map[pos].entity(&items) {
         intents.wants_to_pick_up(player, item);
+        reset_initiative(world);
 
         RunState::Running
     } else {
@@ -88,6 +91,7 @@ fn use_item(world: &mut World, index: usize) -> RunState {
         match usables.get(item) {
             Some(Usable::OnSelf) => {
                 intents.wants_to_use(item, player);
+                reset_initiative(world);
 
                 RunState::Running
             }
@@ -99,6 +103,8 @@ fn use_item(world: &mut World, index: usize) -> RunState {
                         if player_pos.distance(*target_pos) <= *range {
                             log::debug!("Using {item:?} on {target:?}");
                             intents.wants_to_use(item, target);
+                            reset_initiative(world);
+
                             RunState::Running
                         } else {
                             log::debug!("Can't use {item:?}; target out of range");
@@ -152,4 +158,14 @@ fn cycle_target(world: &mut World, rev: bool) -> RunState {
     targeting_data.set_target(player, new_target);
 
     RunState::AwaitingInput
+}
+
+fn reset_initiative(world: &World) {
+    let player = *world.fetch::<Entity>();
+    let mut has_initiative = world.write_component::<HasInitiative>();
+    let mut initiatives = world.write_component::<Initiative>();
+    let initiative = initiatives.get_mut(player).unwrap();
+
+    initiative.current = initiative.speed;
+    has_initiative.remove(player).unwrap();
 }

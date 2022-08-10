@@ -1,20 +1,23 @@
 mod durability;
 mod field_of_view;
+mod initiative;
 mod inventory;
 mod movement;
 mod usable_effect;
 
 pub use durability::*;
 pub use field_of_view::*;
+pub use initiative::*;
 pub use inventory::*;
 pub use movement::*;
 pub use usable_effect::*;
 
-use crate::{ai::MonsterAI, map::IndexMapSystem, prelude::*, target::ClearTargetSystem};
+use crate::{ai::MonsterAISystem, map::IndexMapSystem, prelude::*, target::ClearTargetSystem};
 
 pub fn dispatcher<'a, 'b>(world: &mut World) -> Dispatcher<'a, 'b> {
     DispatcherBuilder::new()
-        .with(MonsterAI, "monster_ai", &[])
+        .with(InitiativeSystem, "initiative", &[])
+        .with(MonsterAISystem, "monster_ai", &["initiative"])
         .with(MovementSystem, "movement", &["monster_ai"])
         .with(ItemPickupSystem, "item_pickup", &[])
         .with(EffectUseSystem, "effect_use", &[])

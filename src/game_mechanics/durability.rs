@@ -1,5 +1,7 @@
 use crate::prelude::*;
 
+use super::HasInitiative;
+
 #[derive(Component)]
 pub struct Durability {
     health: i32,
@@ -80,10 +82,10 @@ impl Durability {
 pub struct ShieldRegenSystem;
 
 impl<'a> System<'a> for ShieldRegenSystem {
-    type SystemData = WriteStorage<'a, Durability>;
+    type SystemData = (WriteStorage<'a, Durability>, ReadStorage<'a, HasInitiative>);
 
-    fn run(&mut self, mut durabilities: Self::SystemData) {
-        for durability in (&mut durabilities).join() {
+    fn run(&mut self, (mut durabilities, has_initiative): Self::SystemData) {
+        for (durability, _) in (&mut durabilities, &has_initiative).join() {
             if durability.took_damage {
                 durability.took_damage = false;
                 continue;
