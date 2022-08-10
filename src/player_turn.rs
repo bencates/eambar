@@ -81,55 +81,72 @@ fn pick_up_item(world: &mut World) -> RunState {
 
 fn use_item(world: &mut World, index: usize) -> RunState {
     let player = *world.fetch::<Entity>();
-    let mut intents = Intents::fetch(world);
-    let inventory = world.fetch::<Inventory>();
-    let usables = world.read_component::<Usable>();
-    let positions = world.read_component::<Coordinate>();
-    let targets = world.read_component::<Target>();
 
-    if let Some(&item) = inventory.0.get(index) {
-        match usables.get(item) {
-            Some(Usable::OnSelf) => {
-                intents.wants_to_use(item, player);
-                reset_initiative(world);
+    let item = match world.fetch::<Inventory>().0.get(index) {
+        Some(&item) => item,
+        None => {
+            let label = (b'A' + index as u8) as char;
+            log::debug!("No item \"{label}\"");
+            return RunState::AwaitingInput;
+        }
+    };
 
-                RunState::Running
-            }
-            Some(Usable::OnTarget { range }) => {
-                if let Some(&Target(target)) = targets.get(player) {
-                    if let (Some(player_pos), Some(target_pos)) =
-                        (positions.get(player), positions.get(target))
-                    {
-                        if player_pos.distance(*target_pos) <= *range {
-                            log::debug!("Using {item:?} on {target:?}");
-                            intents.wants_to_use(item, target);
-                            reset_initiative(world);
+    let usable = match world.read_component::<Usable>().get(item) {
+        Some(&usable) => usable,
+        None => {
+            log::debug!("Item {item:?} is not usable");
+            return RunState::AwaitingInput;
+        }
+    };
 
-                            RunState::Running
-                        } else {
-                            log::debug!("Can't use {item:?}; target out of range");
-                            RunState::AwaitingInput
-                        }
+    match usable {
+        Usable::OnSelf => {
+            let mut intents = Intents::fetch(world);
+            intents.wants_to_use(item, player);
+            reset_initiative(world);
+
+            RunState::Running
+        }
+        Usable::OnTarget { range } => {
+            let mut intents = Intents::fetch(world);
+            let positions = world.read_component::<Coordinate>();
+            let targets = world.read_component::<Target>();
+
+            if let Some(&Target(target)) = targets.get(player) {
+                if let (Some(player_pos), Some(target_pos)) =
+                    (positions.get(player), positions.get(target))
+                {
+                    if player_pos.distance(*target_pos) <= range {
+                        log::debug!("Using {item:?} on {target:?}");
+                        intents.wants_to_use(item, target);
+                        reset_initiative(world);
+
+                        RunState::Running
                     } else {
-                        log::debug!("Can't use {item:?}; invalid target");
+                        log::debug!("Can't use {item:?}; target out of range");
                         RunState::AwaitingInput
                     }
                 } else {
-                    log::debug!("Can't use {item:?}; no target");
+                    log::debug!("Can't use {item:?}; invalid target");
                     RunState::AwaitingInput
                 }
-            }
-            None => {
-                log::debug!("Item {item:?} is not usable");
-
+            } else {
+                log::debug!("Can't use {item:?}; no target");
                 RunState::AwaitingInput
             }
         }
-    } else {
-        let label = (b'A' + index as u8) as char;
-        log::debug!("No item \"{label}\"");
+        Usable::OnGround { range } => {
+            let targeting_reticule = {
+                let player_pos = *world.read_component::<Coordinate>().get(player).unwrap();
+                let map = world.fetch::<Map>();
 
-        RunState::AwaitingInput
+                TargetingReticule::new(player_pos, range, &map)
+            };
+
+            world.insert(targeting_reticule);
+
+            RunState::TargetGround(item)
+        }
     }
 }
 

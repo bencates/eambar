@@ -1,3 +1,5 @@
+use std::ops::ControlFlow;
+
 use crate::{
     game_mechanics::{self, HasInitiative},
     level::build_level,
@@ -14,6 +16,7 @@ pub enum RunState {
     /// Initialize the world
     NewGame,
     AwaitingInput,
+    TargetGround(Entity),
     Running,
     Quitting,
 }
@@ -35,6 +38,44 @@ impl GameState for GameEngine {
                 self.run()
             }
             AwaitingInput => player_turn::handle_input(ctx, &mut self.world),
+            TargetGround(effect) => {
+                let res = self
+                    .world
+                    .fetch_mut::<TargetingReticule>()
+                    .handle_input(ctx);
+
+                match res {
+                    ControlFlow::Continue(()) => TargetGround(effect),
+                    ControlFlow::Break(coord) => {
+                        self.world.remove::<TargetingReticule>();
+
+                        match coord {
+                            Some(pos) => {
+                                let map = self.world.fetch::<Map>();
+                                let durabilities = self.world.read_component::<Durability>();
+
+                                if let Some(target) = map[pos].entity(&durabilities) {
+                                    let mut intents = Intents::fetch(&self.world);
+
+                                    intents.wants_to_use(effect, target);
+                                }
+
+                                let player = *self.world.fetch::<Entity>();
+                                let mut has_initiative =
+                                    self.world.write_component::<HasInitiative>();
+                                let mut initiatives = self.world.write_component::<Initiative>();
+                                let initiative = initiatives.get_mut(player).unwrap();
+
+                                initiative.current = initiative.speed;
+                                has_initiative.remove(player).unwrap();
+
+                                Running
+                            }
+                            None => AwaitingInput,
+                        }
+                    }
+                }
+            }
             Running => self.run(),
             Quitting => return ctx.quit(),
         };
@@ -53,7 +94,6 @@ impl GameEngine {
 
         dispatcher.setup(&mut world);
         ui_dispatcher.setup(&mut world);
-        world.register::<Item>();
         world.register::<Usable>();
 
         world.insert(RandomNumberGenerator::new());

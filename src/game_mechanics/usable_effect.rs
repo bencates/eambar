@@ -1,11 +1,12 @@
 use super::InInventory;
 use crate::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Clone, Copy)]
+#[allow(clippy::enum_variant_names)]
 pub enum Usable {
     OnSelf,
     OnTarget { range: i32 },
-    // OnGround { range: i32, radius: i32 }
+    OnGround { range: i32 },
 }
 
 #[derive(Component)]

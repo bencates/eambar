@@ -8,6 +8,7 @@ mod level;
 mod map;
 mod player_turn;
 mod target;
+mod targeting;
 mod ui;
 
 mod prelude {
@@ -23,6 +24,7 @@ mod prelude {
         },
         map::{BlocksTile, Coordinate, Direction, Map},
         target::{Target, TargetingData},
+        targeting::TargetingReticule,
         ui::{Appearance, GameLog},
     };
 }

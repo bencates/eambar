@@ -13,6 +13,7 @@ impl<'a> System<'a> for RenderMapSystem {
     type SystemData = (
         ReadExpect<'a, Map>,
         ReadExpect<'a, Entity>,
+        Option<Read<'a, TargetingReticule>>,
         Entities<'a>,
         ReadStorage<'a, Coordinate>,
         ReadStorage<'a, Appearance>,
@@ -22,7 +23,7 @@ impl<'a> System<'a> for RenderMapSystem {
 
     fn run(
         &mut self,
-        (map, player, entities, coordinates, appearances, viewsheds, targets): Self::SystemData,
+        (map, player, targeting_reticule, entities, coordinates, appearances, viewsheds, targets): Self::SystemData,
     ) {
         let player_viewshed = viewsheds.get(*player).unwrap();
         let player_target = targets.get(*player);
@@ -47,6 +48,25 @@ impl<'a> System<'a> for RenderMapSystem {
                     BASE_SCALE,
                     color,
                     to_cp437(appearance.glyph),
+                );
+            }
+        }
+
+        if let Some(targeting_reticule) = targeting_reticule {
+            for &coord in targeting_reticule.coordinates.iter() {
+                let color = if coord == targeting_reticule.cursor {
+                    ColorPair::new(WHITE, BLACK)
+                } else {
+                    ColorPair::new(BLUE, BLACK)
+                };
+
+                draw_batch.set_fancy(
+                    MAP_ORIGIN + coord.into(),
+                    1,
+                    NO_ROTATION,
+                    BASE_SCALE,
+                    color,
+                    to_cp437('█'),
                 );
             }
         }
