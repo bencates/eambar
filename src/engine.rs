@@ -67,10 +67,14 @@ impl GameEngine {
     }
 
     fn run(&mut self) -> RunState {
+        let start = std::time::Instant::now();
+
         while !self.player_has_initiative() {
             self.dispatcher.dispatch(&self.world);
             self.world.maintain();
         }
+
+        log::debug!("Game world update took {:?}", start.elapsed());
 
         AwaitingInput
     }

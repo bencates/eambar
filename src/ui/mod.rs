@@ -25,8 +25,6 @@ const SIDEBAR_WIDTH: i32 = TERM_WIDTH - MAP_WIDTH - 2;
 const FULL_PAINT: usize = (TERM_WIDTH * TERM_HEIGHT) as usize;
 
 pub fn setup() -> BResult<BTerm> {
-    log::debug!("Generating a {TERM_WIDTH}x{TERM_HEIGHT} console");
-
     BTermBuilder::simple(TERM_WIDTH, TERM_HEIGHT)?
         .with_fancy_console(TERM_WIDTH, TERM_HEIGHT, "terminal8x8.png")
         .with_title("Roguelike Tutorial")

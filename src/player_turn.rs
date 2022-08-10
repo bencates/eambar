@@ -48,7 +48,7 @@ fn attack_or_move(world: &mut World, direction: Direction) -> RunState {
         reset_initiative(world);
     } else {
         if !is_legal_move(&map, dest) {
-            log::debug!("Movement blocked");
+            log::warn!("Movement blocked");
             return RunState::AwaitingInput;
         }
 
@@ -73,7 +73,7 @@ fn pick_up_item(world: &mut World) -> RunState {
 
         RunState::Running
     } else {
-        log::debug!("Nothing here to pick up.");
+        log::warn!("Nothing here to pick up.");
 
         RunState::AwaitingInput
     }

@@ -29,7 +29,7 @@ impl<'a> System<'a> for InitiativeSystem {
             .find(|(_, initiative)| initiative.current <= 0)
         {
             Some((entity, _)) => {
-                log::trace!("Giving initiative to Entity #{}", entity.id());
+                log::trace!("Giving initiative to {entity:?}");
                 has_initiative.insert(entity, HasInitiative).unwrap();
             }
             None => {

@@ -57,7 +57,7 @@ impl<'a> System<'a> for VisibilitySystem {
             .collect();
 
         for (entity, &coord, vs, _) in (&entities, &coordinates, &mut viewsheds, &changed).join() {
-            log::debug!("Updating FOV for {entity:?}");
+            log::trace!("Updating FOV for {entity:?}");
 
             vs.visible_tiles.clear();
 
