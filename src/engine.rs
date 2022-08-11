@@ -3,9 +3,9 @@ use crate::{
     level::build_level,
     player_turn,
     prelude::*,
+    targeting::use_ground_effect,
     ui,
 };
-use std::ops::ControlFlow;
 use RunState::*;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -37,39 +37,7 @@ impl GameState for GameEngine {
                 self.run()
             }
             AwaitingInput => player_turn::handle_input(ctx, &mut self.world),
-            TargetGround(effect) => {
-                let res = self
-                    .world
-                    .fetch_mut::<TargetingReticule>()
-                    .handle_input(ctx);
-
-                match res {
-                    ControlFlow::Continue(()) => TargetGround(effect),
-                    ControlFlow::Break(target) => {
-                        self.world.remove::<TargetingReticule>();
-
-                        match target {
-                            Some(target_pos) => {
-                                let player = *self.world.fetch::<Entity>();
-                                let mut effect_usage = EffectUsage::fetch(&self.world);
-                                let mut initiative_data = InitiativeData::fetch(&self.world);
-
-                                match effect_usage.use_on_ground(effect, player, target_pos) {
-                                    Ok(()) => {
-                                        initiative_data.spend_turn(player);
-                                        Running
-                                    }
-                                    Err(reason) => {
-                                        log::warn!("{reason:?}");
-                                        AwaitingInput
-                                    }
-                                }
-                            }
-                            None => AwaitingInput,
-                        }
-                    }
-                }
-            }
+            TargetGround(effect) => use_ground_effect(effect, ctx, &mut self.world),
             Running => self.run(),
             Quitting => return ctx.quit(),
         };
