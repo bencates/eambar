@@ -1,5 +1,3 @@
-use std::ops::ControlFlow;
-
 use crate::{
     game_mechanics::{self, HasInitiative},
     level::build_level,
@@ -7,6 +5,7 @@ use crate::{
     prelude::*,
     ui,
 };
+use std::ops::ControlFlow;
 use RunState::*;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -51,23 +50,17 @@ impl GameState for GameEngine {
 
                         match coord {
                             Some(pos) => {
+                                let player = *self.world.fetch::<Entity>();
                                 let map = self.world.fetch::<Map>();
                                 let durabilities = self.world.read_component::<Durability>();
+                                let mut intents = Intents::fetch(&self.world);
+                                let mut initiative_data = InitiativeData::fetch(&self.world);
 
                                 if let Some(target) = map[pos].entity(&durabilities) {
-                                    let mut intents = Intents::fetch(&self.world);
-
                                     intents.wants_to_use(effect, target);
                                 }
 
-                                let player = *self.world.fetch::<Entity>();
-                                let mut has_initiative =
-                                    self.world.write_component::<HasInitiative>();
-                                let mut initiatives = self.world.write_component::<Initiative>();
-                                let initiative = initiatives.get_mut(player).unwrap();
-
-                                initiative.current = initiative.speed;
-                                has_initiative.remove(player).unwrap();
+                                initiative_data.spend_turn(player);
 
                                 Running
                             }

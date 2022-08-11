@@ -1,4 +1,4 @@
-use crate::{game_mechanics::HasInitiative, prelude::*};
+use crate::prelude::*;
 
 pub struct MonsterAISystem;
 
@@ -8,9 +8,8 @@ impl<'a> System<'a> for MonsterAISystem {
         ReadExpect<'a, Entity>,
         Entities<'a>,
         Intents<'a>,
+        InitiativeData<'a>,
         ReadStorage<'a, Monster>,
-        WriteStorage<'a, Initiative>,
-        WriteStorage<'a, HasInitiative>,
         ReadStorage<'a, Coordinate>,
         ReadStorage<'a, Viewshed>,
         ReadStorage<'a, Usable>,
@@ -23,30 +22,27 @@ impl<'a> System<'a> for MonsterAISystem {
             player,
             entities,
             mut intents,
+            mut initiative_data,
             monsters,
-            mut initiatives,
-            mut has_initiative,
             coordinates,
             viewsheds,
             usables,
         ): Self::SystemData,
     ) {
         let player_coord = *coordinates.get(*player).unwrap();
-        let mut had_initiative = None;
+        let mut had_initiative: SmallVec<[Entity; 1]> = SmallVec::new();
 
-        for (entity, _, _, initiative, &coord, vs, usable) in (
+        for (entity, _, _, &coord, vs, usable) in (
             &entities,
             &monsters,
-            &has_initiative,
-            &mut initiatives,
+            initiative_data.has_initiative(),
             &coordinates,
             &viewsheds,
             usables.maybe(),
         )
             .join()
         {
-            had_initiative = Some(entity);
-            initiative.current = initiative.speed;
+            had_initiative.push(entity);
 
             if !vs.is_visible(player_coord) {
                 continue;
@@ -64,8 +60,8 @@ impl<'a> System<'a> for MonsterAISystem {
             }
         }
 
-        if let Some(entity) = had_initiative {
-            has_initiative.remove(entity).unwrap();
+        for entity in had_initiative {
+            initiative_data.spend_turn(entity);
         }
     }
 }

@@ -10,6 +10,27 @@ pub struct Initiative {
     pub speed: i32,
 }
 
+#[derive(SystemData)]
+pub struct InitiativeData<'a> {
+    // entities: Entities<'a>,
+    initiatives: WriteStorage<'a, Initiative>,
+    has_initiative: WriteStorage<'a, HasInitiative>,
+}
+
+impl<'a> InitiativeData<'a> {
+    pub fn has_initiative(&self) -> &WriteStorage<'a, HasInitiative> {
+        &self.has_initiative
+    }
+
+    pub fn spend_turn(&mut self, entity: Entity) {
+        if self.has_initiative.remove(entity).is_some() {
+            if let Some(initiative) = self.initiatives.get_mut(entity) {
+                initiative.current = initiative.speed;
+            }
+        }
+    }
+}
+
 pub struct InitiativeSystem;
 
 impl<'a> System<'a> for InitiativeSystem {

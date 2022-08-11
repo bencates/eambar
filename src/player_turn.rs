@@ -1,4 +1,4 @@
-use crate::game_mechanics::{is_legal_move, HasInitiative};
+use crate::game_mechanics::is_legal_move;
 use crate::prelude::*;
 
 pub fn handle_input(ctx: &BTerm, world: &mut World) -> RunState {
@@ -37,6 +37,7 @@ fn attack_or_move(world: &mut World, direction: Direction) -> RunState {
     let player = *world.fetch::<Entity>();
     let pos = *world.read_component::<Coordinate>().get(player).unwrap();
     let mut intents = Intents::fetch(world);
+    let mut initiative_data = InitiativeData::fetch(world);
     let character_sheets = world.read_component::<Durability>();
 
     let dest = pos + direction;
@@ -45,7 +46,7 @@ fn attack_or_move(world: &mut World, direction: Direction) -> RunState {
         TargetingData::fetch(world).set_target(player, Some(target));
         // TODO: maybe check if target in range?
         intents.wants_to_use(player, target);
-        reset_initiative(world);
+        initiative_data.spend_turn(player);
     } else {
         if !is_legal_move(&map, dest) {
             log::warn!("Movement blocked");
@@ -54,7 +55,7 @@ fn attack_or_move(world: &mut World, direction: Direction) -> RunState {
 
         log::debug!("Moving to {dest:?}");
         intents.wants_to_move(player, dest);
-        reset_initiative(world);
+        initiative_data.spend_turn(player);
     }
 
     RunState::Running
@@ -65,11 +66,12 @@ fn pick_up_item(world: &mut World) -> RunState {
     let player = *world.fetch::<Entity>();
     let pos = *world.read_component::<Coordinate>().get(player).unwrap();
     let mut intents = Intents::fetch(world);
+    let mut initiative_data = InitiativeData::fetch(world);
     let items = world.read_component::<Item>();
 
     if let Some(item) = map[pos].entity(&items) {
         intents.wants_to_pick_up(player, item);
-        reset_initiative(world);
+        initiative_data.spend_turn(player);
 
         RunState::Running
     } else {
@@ -102,8 +104,10 @@ fn use_item(world: &mut World, index: usize) -> RunState {
     match usable {
         Usable::OnSelf => {
             let mut intents = Intents::fetch(world);
+            let mut initiative_data = InitiativeData::fetch(world);
+
             intents.wants_to_use(item, player);
-            reset_initiative(world);
+            initiative_data.spend_turn(player);
 
             RunState::Running
         }
@@ -111,6 +115,7 @@ fn use_item(world: &mut World, index: usize) -> RunState {
             let mut intents = Intents::fetch(world);
             let positions = world.read_component::<Coordinate>();
             let targets = world.read_component::<Target>();
+            let mut initiative_data = InitiativeData::fetch(world);
 
             if let Some(&Target(target)) = targets.get(player) {
                 if let (Some(player_pos), Some(target_pos)) =
@@ -118,8 +123,9 @@ fn use_item(world: &mut World, index: usize) -> RunState {
                 {
                     if player_pos.distance(*target_pos) <= range {
                         log::debug!("Using {item:?} on {target:?}");
+
                         intents.wants_to_use(item, target);
-                        reset_initiative(world);
+                        initiative_data.spend_turn(player);
 
                         RunState::Running
                     } else {
@@ -175,14 +181,4 @@ fn cycle_target(world: &mut World, rev: bool) -> RunState {
     targeting_data.set_target(player, new_target);
 
     RunState::AwaitingInput
-}
-
-fn reset_initiative(world: &World) {
-    let player = *world.fetch::<Entity>();
-    let mut has_initiative = world.write_component::<HasInitiative>();
-    let mut initiatives = world.write_component::<Initiative>();
-    let initiative = initiatives.get_mut(player).unwrap();
-
-    initiative.current = initiative.speed;
-    has_initiative.remove(player).unwrap();
 }
