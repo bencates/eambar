@@ -4,11 +4,11 @@ use crate::prelude::*;
 pub struct Target(pub Entity);
 
 #[derive(SystemData)]
-pub struct TargetingData<'a> {
+pub struct Targeting<'a> {
     targets: WriteStorage<'a, Target>,
 }
 
-impl<'a> TargetingData<'a> {
+impl<'a> Targeting<'a> {
     pub fn prev_target(&self, entity: Entity, potential_targets: &[Entity]) -> Option<Entity> {
         if let Some(&Target(curr)) = self.targets.get(entity) {
             potential_targets

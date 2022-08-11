@@ -7,7 +7,6 @@ mod game_mechanics;
 mod level;
 mod map;
 mod player_turn;
-mod target;
 mod targeting;
 mod ui;
 
@@ -23,8 +22,7 @@ mod prelude {
             ProvidesHealing, Usable, Viewshed,
         },
         map::{BlocksTile, Coordinate, Direction, Map},
-        target::{Target, TargetingData},
-        targeting::TargetingReticule,
+        targeting::{Target, Targeting, TargetingReticule},
         ui::{Appearance, GameLog},
     };
 }

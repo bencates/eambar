@@ -12,7 +12,7 @@ pub use inventory::*;
 pub use movement::*;
 pub use usable_effect::*;
 
-use crate::{ai::MonsterAISystem, map::IndexMapSystem, prelude::*, target::ClearTargetSystem};
+use crate::{ai::MonsterAISystem, map::IndexMapSystem, prelude::*, targeting::ClearTargetSystem};
 
 pub fn dispatcher<'a, 'b>(world: &mut World) -> Dispatcher<'a, 'b> {
     DispatcherBuilder::new()

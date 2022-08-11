@@ -43,7 +43,7 @@ fn attack_or_move(world: &mut World, direction: Direction) -> RunState {
     let dest = pos + direction;
 
     if let Some(target) = map[dest].entity(&character_sheets) {
-        TargetingData::fetch(world).set_target(player, Some(target));
+        Targeting::fetch(world).set_target(player, Some(target));
         // TODO: maybe check if target in range?
         intents.wants_to_use(player, target);
         initiative_data.spend_turn(player);
@@ -161,7 +161,7 @@ fn cycle_target(world: &mut World, rev: bool) -> RunState {
     let entities = world.entities();
     let monsters = world.read_component::<Monster>();
     let positions = world.read_component::<Coordinate>();
-    let mut targeting_data = TargetingData::fetch(world);
+    let mut targeting_data = Targeting::fetch(world);
 
     let player = *world.fetch::<Entity>();
     let viewshed = viewsheds.get(player).unwrap();
