@@ -9,29 +9,35 @@ pub struct Targeting<'a> {
 }
 
 impl<'a> Targeting<'a> {
-    pub fn prev_target(&self, entity: Entity, potential_targets: &[Entity]) -> Option<Entity> {
-        if let Some(&Target(curr)) = self.targets.get(entity) {
-            potential_targets
-                .iter()
-                .position(|&e| curr == e)
-                .and_then(|idx| idx.checked_sub(1))
-                .and_then(|idx| potential_targets.get(idx))
-        } else {
-            potential_targets.last()
-        }
-        .copied()
+    pub fn prev_target(&mut self, entity: Entity, potential_targets: &[Entity]) {
+        self.set_target(
+            entity,
+            if let Some(&Target(curr)) = self.targets.get(entity) {
+                potential_targets
+                    .iter()
+                    .position(|&e| curr == e)
+                    .and_then(|idx| idx.checked_sub(1))
+                    .and_then(|idx| potential_targets.get(idx))
+            } else {
+                potential_targets.last()
+            }
+            .copied(),
+        );
     }
 
-    pub fn next_target(&self, entity: Entity, potential_targets: &[Entity]) -> Option<Entity> {
-        if let Some(&Target(curr)) = self.targets.get(entity) {
-            potential_targets
-                .iter()
-                .position(|&e| curr == e)
-                .and_then(|idx| potential_targets.get(idx + 1))
-        } else {
-            potential_targets.first()
-        }
-        .copied()
+    pub fn next_target(&mut self, entity: Entity, potential_targets: &[Entity]) {
+        self.set_target(
+            entity,
+            if let Some(&Target(curr)) = self.targets.get(entity) {
+                potential_targets
+                    .iter()
+                    .position(|&e| curr == e)
+                    .and_then(|idx| potential_targets.get(idx + 1))
+            } else {
+                potential_targets.first()
+            }
+            .copied(),
+        );
     }
 
     pub fn set_target(&mut self, entity: Entity, target_entity: Option<Entity>) {

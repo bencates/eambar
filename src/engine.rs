@@ -45,24 +45,25 @@ impl GameState for GameEngine {
 
                 match res {
                     ControlFlow::Continue(()) => TargetGround(effect),
-                    ControlFlow::Break(coord) => {
+                    ControlFlow::Break(target) => {
                         self.world.remove::<TargetingReticule>();
 
-                        match coord {
-                            Some(pos) => {
+                        match target {
+                            Some(target_pos) => {
                                 let player = *self.world.fetch::<Entity>();
-                                let map = self.world.fetch::<Map>();
-                                let durabilities = self.world.read_component::<Durability>();
-                                let mut intents = Intents::fetch(&self.world);
+                                let mut effect_usage = EffectUsage::fetch(&self.world);
                                 let mut initiative_data = InitiativeData::fetch(&self.world);
 
-                                if let Some(target) = map[pos].entity(&durabilities) {
-                                    intents.wants_to_use(effect, target);
+                                match effect_usage.use_on_ground(effect, player, target_pos) {
+                                    Ok(()) => {
+                                        initiative_data.spend_turn(player);
+                                        Running
+                                    }
+                                    Err(reason) => {
+                                        log::warn!("{reason:?}");
+                                        AwaitingInput
+                                    }
                                 }
-
-                                initiative_data.spend_turn(player);
-
-                                Running
                             }
                             None => AwaitingInput,
                         }

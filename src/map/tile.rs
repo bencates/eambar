@@ -45,9 +45,9 @@ impl Tile {
         self.blocked
     }
 
-    // pub fn contents(&self) -> &[Entity] {
-    //     &self.contents
-    // }
+    pub fn contents(&self) -> &[Entity] {
+        &self.contents
+    }
 
     pub fn entity<T: Component>(&self, storage: &ReadStorage<T>) -> Option<Entity> {
         self.contents

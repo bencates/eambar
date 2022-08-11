@@ -1,4 +1,5 @@
 mod durability;
+mod effect;
 mod field_of_view;
 mod initiative;
 mod inventory;
@@ -6,6 +7,7 @@ mod movement;
 mod usable_effect;
 
 pub use durability::*;
+pub use effect::EffectUsage;
 pub use field_of_view::*;
 pub use initiative::*;
 pub use inventory::*;
@@ -42,7 +44,6 @@ pub fn dispatcher<'a, 'b>(world: &mut World) -> Dispatcher<'a, 'b> {
 pub struct Intents<'a> {
     wants_to_move: WriteStorage<'a, WantsToMove>,
     wants_to_pick_up: WriteStorage<'a, WantsToPickUp>,
-    being_used: WriteStorage<'a, BeingUsed>,
 }
 
 impl<'a> Intents<'a> {
@@ -56,11 +57,5 @@ impl<'a> Intents<'a> {
         self.wants_to_pick_up
             .insert(recipient, WantsToPickUp(item))
             .expect("could not queue item pickup intent");
-    }
-
-    pub fn wants_to_use(&mut self, effect: Entity, target: Entity) {
-        self.being_used
-            .insert(effect, BeingUsed(target))
-            .expect("could not queue item use intent");
     }
 }

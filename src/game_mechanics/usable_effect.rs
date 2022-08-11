@@ -10,7 +10,7 @@ pub enum Usable {
 }
 
 #[derive(Component)]
-pub struct BeingUsed(pub(super) Entity);
+pub struct BeingUsed(pub(super) SmallVec<[Entity; 1]>);
 
 #[derive(Component)]
 pub struct DealsDamage(pub i32);
@@ -47,7 +47,7 @@ impl<'a> System<'a> for EffectUseSystem {
             mut game_log,
         ): Self::SystemData,
     ) {
-        for (item, item_type, &BeingUsed(target), item_name, damage, healing) in (
+        for (item, item_type, BeingUsed(targets), item_name, damage, healing) in (
             &entities,
             item_types.maybe(),
             &item_use_intents,
@@ -57,18 +57,20 @@ impl<'a> System<'a> for EffectUseSystem {
         )
             .join()
         {
-            if let Some(durability) = durabilities.get_mut(target) {
-                if let Some(&DealsDamage(raw_damage)) = damage {
-                    let blocked_damage = durability.take_damage(raw_damage);
-                    if let Some(target_name) = names.get(target) {
-                        game_log.damage(item_name, target_name, blocked_damage);
+            for &target in targets {
+                if let Some(durability) = durabilities.get_mut(target) {
+                    if let Some(&DealsDamage(raw_damage)) = damage {
+                        let blocked_damage = durability.take_damage(raw_damage);
+                        if let Some(target_name) = names.get(target) {
+                            game_log.damage(item_name, target_name, blocked_damage);
+                        }
                     }
-                }
 
-                if let Some(&ProvidesHealing(amount)) = healing {
-                    let amount = durability.heal(amount);
-                    if let Some(target_name) = names.get(target) {
-                        game_log.healing(item_name, target_name, amount);
+                    if let Some(&ProvidesHealing(amount)) = healing {
+                        let amount = durability.heal(amount);
+                        if let Some(target_name) = names.get(target) {
+                            game_log.healing(item_name, target_name, amount);
+                        }
                     }
                 }
             }

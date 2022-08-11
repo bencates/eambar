@@ -8,11 +8,11 @@ impl<'a> System<'a> for MonsterAISystem {
         ReadExpect<'a, Entity>,
         Entities<'a>,
         Intents<'a>,
+        EffectUsage<'a>,
         InitiativeData<'a>,
         ReadStorage<'a, Monster>,
         ReadStorage<'a, Coordinate>,
         ReadStorage<'a, Viewshed>,
-        ReadStorage<'a, Usable>,
     );
 
     fn run(
@@ -22,23 +22,22 @@ impl<'a> System<'a> for MonsterAISystem {
             player,
             entities,
             mut intents,
+            mut effect_usage,
             mut initiative_data,
             monsters,
             coordinates,
             viewsheds,
-            usables,
         ): Self::SystemData,
     ) {
         let player_coord = *coordinates.get(*player).unwrap();
         let mut had_initiative: SmallVec<[Entity; 1]> = SmallVec::new();
 
-        for (entity, _, _, &coord, vs, usable) in (
+        for (entity, _, _, &coord, vs) in (
             &entities,
             &monsters,
             initiative_data.has_initiative(),
             &coordinates,
             &viewsheds,
-            usables.maybe(),
         )
             .join()
         {
@@ -48,15 +47,13 @@ impl<'a> System<'a> for MonsterAISystem {
                 continue;
             }
 
-            let can_use_self_on_player = match usable {
-                Some(&Usable::OnTarget { range }) => coord.distance(player_coord) <= range,
-                _ => false,
-            };
-
-            if can_use_self_on_player {
-                intents.wants_to_use(entity, *player);
-            } else if let Some(dest) = map.path(coord, player_coord).and_then(|mut p| p.nth(1)) {
-                intents.wants_to_move(entity, dest)
+            match effect_usage.use_on_target(entity, entity, *player) {
+                Ok(()) => {}
+                Err(_) => {
+                    if let Some(dest) = map.path(coord, player_coord).and_then(|mut p| p.nth(1)) {
+                        intents.wants_to_move(entity, dest)
+                    }
+                }
             }
         }
 

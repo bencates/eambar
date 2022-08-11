@@ -38,14 +38,16 @@ fn attack_or_move(world: &mut World, direction: Direction) -> RunState {
     let pos = *world.read_component::<Coordinate>().get(player).unwrap();
     let mut intents = Intents::fetch(world);
     let mut initiative_data = InitiativeData::fetch(world);
-    let character_sheets = world.read_component::<Durability>();
+    let monsters = world.read_component::<Monster>();
 
     let dest = pos + direction;
 
-    if let Some(target) = map[dest].entity(&character_sheets) {
-        Targeting::fetch(world).set_target(player, Some(target));
-        // TODO: maybe check if target in range?
-        intents.wants_to_use(player, target);
+    if let Some(target) = map[dest].entity(&monsters) {
+        let mut targeting = Targeting::fetch(world);
+        let mut effect_usage = EffectUsage::fetch(world);
+
+        targeting.set_target(player, Some(target));
+        effect_usage.use_on_target(player, player, target).unwrap();
         initiative_data.spend_turn(player);
     } else {
         if !is_legal_move(&map, dest) {
@@ -103,42 +105,42 @@ fn use_item(world: &mut World, index: usize) -> RunState {
 
     match usable {
         Usable::OnSelf => {
-            let mut intents = Intents::fetch(world);
+            let mut effect_usage = EffectUsage::fetch(world);
             let mut initiative_data = InitiativeData::fetch(world);
 
-            intents.wants_to_use(item, player);
-            initiative_data.spend_turn(player);
-
-            RunState::Running
-        }
-        Usable::OnTarget { range } => {
-            let mut intents = Intents::fetch(world);
-            let positions = world.read_component::<Coordinate>();
-            let targets = world.read_component::<Target>();
-            let mut initiative_data = InitiativeData::fetch(world);
-
-            if let Some(&Target(target)) = targets.get(player) {
-                if let (Some(player_pos), Some(target_pos)) =
-                    (positions.get(player), positions.get(target))
-                {
-                    if player_pos.distance(*target_pos) <= range {
-                        log::debug!("Using {item:?} on {target:?}");
-
-                        intents.wants_to_use(item, target);
-                        initiative_data.spend_turn(player);
-
-                        RunState::Running
-                    } else {
-                        log::debug!("Can't use {item:?}; target out of range");
-                        RunState::AwaitingInput
-                    }
-                } else {
-                    log::debug!("Can't use {item:?}; invalid target");
+            match effect_usage.use_on_self(item, player) {
+                Ok(()) => {
+                    initiative_data.spend_turn(player);
+                    RunState::Running
+                }
+                Err(reason) => {
+                    log::error!("{reason:?}");
                     RunState::AwaitingInput
                 }
-            } else {
-                log::debug!("Can't use {item:?}; no target");
-                RunState::AwaitingInput
+            }
+        }
+        Usable::OnTarget { .. } => {
+            let targets = world.read_component::<Target>();
+            let mut effect_usage = EffectUsage::fetch(world);
+            let mut initiative_data = InitiativeData::fetch(world);
+
+            let target = match targets.get(player) {
+                Some(&Target(target)) => target,
+                None => {
+                    log::error!("no target");
+                    return RunState::AwaitingInput;
+                }
+            };
+
+            match effect_usage.use_on_target(item, player, target) {
+                Ok(()) => {
+                    initiative_data.spend_turn(player);
+                    RunState::Running
+                }
+                Err(reason) => {
+                    log::error!("{reason:?}");
+                    RunState::AwaitingInput
+                }
             }
         }
         Usable::OnGround { range } => {
@@ -172,13 +174,11 @@ fn cycle_target(world: &mut World, rev: bool) -> RunState {
         .map(|(entity, _, _)| entity)
         .collect();
 
-    let new_target = if rev {
+    if rev {
         targeting_data.prev_target(player, &potential_targets)
     } else {
         targeting_data.next_target(player, &potential_targets)
-    };
-
-    targeting_data.set_target(player, new_target);
+    }
 
     RunState::AwaitingInput
 }
