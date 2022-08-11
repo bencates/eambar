@@ -3,27 +3,28 @@ use crate::prelude::*;
 
 pub fn handle_input(ctx: &BTerm, world: &mut World) -> RunState {
     use {Direction::*, RunState::*, VirtualKeyCode::*};
+    let mut player_turn = PlayerTurn::fetch(world);
 
     ctx.key.map_or(AwaitingInput, |key| {
         if ctx.control {
             let index = letter_to_option(key);
             if index >= 0 {
-                return use_item(world, index as usize);
+                return player_turn.use_item(index as usize);
             }
         }
 
         match key {
             // Movement keys
-            Q => attack_or_move(world, NorthWest),
-            W => attack_or_move(world, North),
-            E => attack_or_move(world, NorthEast),
-            A => attack_or_move(world, SouthWest),
-            S => attack_or_move(world, South),
-            D => attack_or_move(world, SouthEast),
+            Q => player_turn.attack_or_move(NorthWest),
+            W => player_turn.attack_or_move(North),
+            E => player_turn.attack_or_move(NorthEast),
+            A => player_turn.attack_or_move(SouthWest),
+            S => player_turn.attack_or_move(South),
+            D => player_turn.attack_or_move(SouthEast),
 
-            Tab => cycle_target(world, ctx.shift),
+            Tab => player_turn.cycle_target(ctx.shift),
 
-            G => pick_up_item(world),
+            G => player_turn.pick_up_item(),
 
             Escape => Quitting,
 
@@ -32,153 +33,140 @@ pub fn handle_input(ctx: &BTerm, world: &mut World) -> RunState {
     })
 }
 
-fn attack_or_move(world: &mut World, direction: Direction) -> RunState {
-    let map = world.fetch::<Map>();
-    let player = *world.fetch::<Entity>();
-    let pos = *world.read_component::<Coordinate>().get(player).unwrap();
-    let mut intents = Intents::fetch(world);
-    let mut initiative_data = InitiativeData::fetch(world);
-    let monsters = world.read_component::<Monster>();
-
-    let dest = pos + direction;
-
-    if let Some(target) = map[dest].entity(&monsters) {
-        let mut targeting = Targeting::fetch(world);
-        let mut effect_usage = EffectUsage::fetch(world);
-
-        targeting.set_target(player, Some(target));
-        effect_usage.use_on_target(player, player, target).unwrap();
-        initiative_data.spend_turn(player);
-    } else {
-        if !is_legal_move(&map, dest) {
-            log::warn!("Movement blocked");
-            return RunState::AwaitingInput;
-        }
-
-        log::debug!("Moving to {dest:?}");
-        intents.wants_to_move(player, dest);
-        initiative_data.spend_turn(player);
-    }
-
-    RunState::Running
+#[derive(SystemData)]
+pub struct PlayerTurn<'a> {
+    map: ReadExpect<'a, Map>,
+    player: ReadExpect<'a, Entity>,
+    inventory: Read<'a, Inventory>,
+    lazy: Read<'a, LazyUpdate>,
+    intents: Intents<'a>,
+    targeting: Targeting<'a>,
+    effect_usage: EffectUsage<'a>,
+    initiative_data: InitiativeData<'a>,
+    entities: Entities<'a>,
+    positions: ReadStorage<'a, Coordinate>,
+    monsters: ReadStorage<'a, Monster>,
+    items: ReadStorage<'a, Item>,
+    usables: ReadStorage<'a, Usable>,
+    viewsheds: ReadStorage<'a, Viewshed>,
 }
 
-fn pick_up_item(world: &mut World) -> RunState {
-    let map = world.fetch::<Map>();
-    let player = *world.fetch::<Entity>();
-    let pos = *world.read_component::<Coordinate>().get(player).unwrap();
-    let mut intents = Intents::fetch(world);
-    let mut initiative_data = InitiativeData::fetch(world);
-    let items = world.read_component::<Item>();
+impl<'a> PlayerTurn<'a> {
+    pub fn attack_or_move(&mut self, direction: Direction) -> RunState {
+        let pos = *self.positions.get(*self.player).unwrap();
 
-    if let Some(item) = map[pos].entity(&items) {
-        intents.wants_to_pick_up(player, item);
-        initiative_data.spend_turn(player);
+        let dest = pos + direction;
+
+        if let Some(target) = self.map[dest].entity(&self.monsters) {
+            self.targeting.set_target(*self.player, Some(target));
+            self.effect_usage
+                .use_on_target(*self.player, *self.player, target)
+                .unwrap();
+            self.initiative_data.spend_turn(*self.player);
+        } else {
+            if !is_legal_move(&self.map, dest) {
+                log::warn!("Movement blocked");
+                return RunState::AwaitingInput;
+            }
+
+            log::debug!("Moving to {dest:?}");
+            self.intents.wants_to_move(*self.player, dest);
+            self.initiative_data.spend_turn(*self.player);
+        }
 
         RunState::Running
-    } else {
-        log::warn!("Nothing here to pick up.");
+    }
+
+    pub fn pick_up_item(&mut self) -> RunState {
+        let pos = *self.positions.get(*self.player).unwrap();
+
+        if let Some(item) = self.map[pos].entity(&self.items) {
+            self.intents.wants_to_pick_up(*self.player, item);
+            self.initiative_data.spend_turn(*self.player);
+
+            RunState::Running
+        } else {
+            log::warn!("Nothing here to pick up.");
+
+            RunState::AwaitingInput
+        }
+    }
+
+    pub fn use_item(&mut self, index: usize) -> RunState {
+        let item = match self.inventory.0.get(index) {
+            Some(&item) => item,
+            None => {
+                let label = (b'A' + index as u8) as char;
+                log::debug!("No item \"{label}\"");
+                return RunState::AwaitingInput;
+            }
+        };
+
+        let usable = match self.usables.get(item) {
+            Some(&usable) => usable,
+            None => {
+                log::debug!("Item {item:?} is not usable");
+                return RunState::AwaitingInput;
+            }
+        };
+
+        match usable {
+            Usable::OnSelf => match self.effect_usage.use_on_self(item, *self.player) {
+                Ok(()) => {
+                    self.initiative_data.spend_turn(*self.player);
+                    RunState::Running
+                }
+                Err(reason) => {
+                    log::error!("{reason:?}");
+                    RunState::AwaitingInput
+                }
+            },
+            Usable::OnTarget { .. } => {
+                let target = match self.targeting.get(*self.player) {
+                    Some(&Target(target)) => target,
+                    None => {
+                        log::error!("no target");
+                        return RunState::AwaitingInput;
+                    }
+                };
+
+                match self.effect_usage.use_on_target(item, *self.player, target) {
+                    Ok(()) => {
+                        self.initiative_data.spend_turn(*self.player);
+                        RunState::Running
+                    }
+                    Err(reason) => {
+                        log::error!("{reason:?}");
+                        RunState::AwaitingInput
+                    }
+                }
+            }
+            Usable::OnGround { range } => {
+                let player_pos = *self.positions.get(*self.player).unwrap();
+                let targeting_reticule = TargetingReticule::new(player_pos, range, &self.map);
+
+                self.lazy.exec_mut(|world| world.insert(targeting_reticule));
+
+                RunState::TargetGround(item)
+            }
+        }
+    }
+
+    pub fn cycle_target(&mut self, rev: bool) -> RunState {
+        let viewshed = self.viewsheds.get(*self.player).unwrap();
+
+        let potential_targets: Vec<_> = (&self.entities, &self.positions, &self.monsters)
+            .join()
+            .filter(|&(_, &pos, _)| viewshed.is_visible(pos))
+            .map(|(entity, _, _)| entity)
+            .collect();
+
+        if rev {
+            self.targeting.prev_target(*self.player, &potential_targets)
+        } else {
+            self.targeting.next_target(*self.player, &potential_targets)
+        }
 
         RunState::AwaitingInput
     }
-}
-
-fn use_item(world: &mut World, index: usize) -> RunState {
-    let player = *world.fetch::<Entity>();
-
-    let item = match world.fetch::<Inventory>().0.get(index) {
-        Some(&item) => item,
-        None => {
-            let label = (b'A' + index as u8) as char;
-            log::debug!("No item \"{label}\"");
-            return RunState::AwaitingInput;
-        }
-    };
-
-    let usable = match world.read_component::<Usable>().get(item) {
-        Some(&usable) => usable,
-        None => {
-            log::debug!("Item {item:?} is not usable");
-            return RunState::AwaitingInput;
-        }
-    };
-
-    match usable {
-        Usable::OnSelf => {
-            let mut effect_usage = EffectUsage::fetch(world);
-            let mut initiative_data = InitiativeData::fetch(world);
-
-            match effect_usage.use_on_self(item, player) {
-                Ok(()) => {
-                    initiative_data.spend_turn(player);
-                    RunState::Running
-                }
-                Err(reason) => {
-                    log::error!("{reason:?}");
-                    RunState::AwaitingInput
-                }
-            }
-        }
-        Usable::OnTarget { .. } => {
-            let targets = world.read_component::<Target>();
-            let mut effect_usage = EffectUsage::fetch(world);
-            let mut initiative_data = InitiativeData::fetch(world);
-
-            let target = match targets.get(player) {
-                Some(&Target(target)) => target,
-                None => {
-                    log::error!("no target");
-                    return RunState::AwaitingInput;
-                }
-            };
-
-            match effect_usage.use_on_target(item, player, target) {
-                Ok(()) => {
-                    initiative_data.spend_turn(player);
-                    RunState::Running
-                }
-                Err(reason) => {
-                    log::error!("{reason:?}");
-                    RunState::AwaitingInput
-                }
-            }
-        }
-        Usable::OnGround { range } => {
-            let targeting_reticule = {
-                let player_pos = *world.read_component::<Coordinate>().get(player).unwrap();
-                let map = world.fetch::<Map>();
-
-                TargetingReticule::new(player_pos, range, &map)
-            };
-
-            world.insert(targeting_reticule);
-
-            RunState::TargetGround(item)
-        }
-    }
-}
-
-fn cycle_target(world: &mut World, rev: bool) -> RunState {
-    let viewsheds = world.read_component::<Viewshed>();
-    let entities = world.entities();
-    let monsters = world.read_component::<Monster>();
-    let positions = world.read_component::<Coordinate>();
-    let mut targeting_data = Targeting::fetch(world);
-
-    let player = *world.fetch::<Entity>();
-    let viewshed = viewsheds.get(player).unwrap();
-
-    let potential_targets: Vec<_> = (&entities, &positions, &monsters)
-        .join()
-        .filter(|&(_, &pos, _)| viewshed.is_visible(pos))
-        .map(|(entity, _, _)| entity)
-        .collect();
-
-    if rev {
-        targeting_data.prev_target(player, &potential_targets)
-    } else {
-        targeting_data.next_target(player, &potential_targets)
-    }
-
-    RunState::AwaitingInput
 }

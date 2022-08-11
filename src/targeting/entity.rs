@@ -9,6 +9,10 @@ pub struct Targeting<'a> {
 }
 
 impl<'a> Targeting<'a> {
+    pub fn get(&self, entity: Entity) -> Option<&Target> {
+        self.targets.get(entity)
+    }
+
     pub fn prev_target(&mut self, entity: Entity, potential_targets: &[Entity]) {
         self.set_target(
             entity,
