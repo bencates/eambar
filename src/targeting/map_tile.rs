@@ -2,7 +2,6 @@ use crate::prelude::*;
 use std::{collections::HashSet, ops::ControlFlow};
 
 pub fn use_ground_effect(effect: Entity, ctx: &BTerm, world: &mut World) -> RunState {
-    world.maintain(); // Ensure lazily inserted targeting reticule resource exists
     let res = world.fetch_mut::<TargetingReticule>().handle_input(ctx);
 
     match res {
