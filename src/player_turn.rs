@@ -117,9 +117,10 @@ impl<'a> PlayerTurn<'a> {
 
                 Ok(RunState::Running)
             }
-            Usable::OnGround { range } => {
+            Usable::OnGround { range, radius } => {
                 let player_pos = *self.positions.get(*self.player).unwrap();
-                let targeting_reticule = TargetingReticule::new(player_pos, range, &self.map);
+                let targeting_reticule =
+                    TargetingReticule::new(player_pos, range, radius, &self.map);
 
                 self.lazy.exec_mut(|world| world.insert(targeting_reticule));
 

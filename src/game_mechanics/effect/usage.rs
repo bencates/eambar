@@ -48,8 +48,8 @@ impl<'a> EffectUsage<'a> {
         user: Entity,
         target_pos: Coordinate,
     ) -> Result<()> {
-        let range = match self.usables.get(effect) {
-            Some(&Usable::OnGround { range }) => range,
+        let (range, radius) = match self.usables.get(effect) {
+            Some(&Usable::OnGround { range, radius }) => (range, radius),
             _ => bail!("not usable on ground"),
         };
 
@@ -59,7 +59,13 @@ impl<'a> EffectUsage<'a> {
             "target out of range"
         );
 
-        let targets = self.map[target_pos].contents().into();
+        let targets = self
+            .map
+            .area_of_effect(target_pos, radius)
+            .into_iter()
+            .flat_map(|pos| self.map[pos].iter())
+            .collect();
+
         self.being_used.insert(effect, BeingUsed(targets))?;
 
         Ok(())

@@ -15,7 +15,7 @@ impl Appearance {
             name: "Player".to_string(),
             glyph: '@',
             color: ColorPair::new(YELLOW, RGBA::new()),
-            z_order: 4,
+            z_order: 30,
         }
     }
 
@@ -24,7 +24,7 @@ impl Appearance {
             name: name.to_string(),
             glyph,
             color: ColorPair::new(color, RGBA::new()),
-            z_order: 3,
+            z_order: 20,
         }
     }
 
@@ -33,7 +33,7 @@ impl Appearance {
             name: name.to_string(),
             glyph,
             color: ColorPair::new(color, RGBA::new()),
-            z_order: 2,
+            z_order: 10,
         }
     }
 

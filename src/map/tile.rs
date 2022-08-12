@@ -45,15 +45,12 @@ impl Tile {
         self.blocked
     }
 
-    pub fn contents(&self) -> &[Entity] {
-        &self.contents
+    pub fn iter(&self) -> impl Iterator<Item = Entity> + '_ {
+        self.contents.iter().copied()
     }
 
     pub fn entity<T: Component>(&self, storage: &ReadStorage<T>) -> Option<Entity> {
-        self.contents
-            .iter()
-            .copied()
-            .find(|&entity| storage.contains(entity))
+        self.iter().find(|&entity| storage.contains(entity))
     }
 
     pub(super) fn reset_index(&mut self) {

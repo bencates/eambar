@@ -87,7 +87,10 @@ mod item {
         entity
             .with(Item::Consumable)
             .with(Appearance::item("Grenade", '*', ORANGE)) // FIXME: better glyph
-            .with(Usable::OnGround { range: 8 })
+            .with(Usable::OnGround {
+                range: 8,
+                radius: 2,
+            })
             .with(DealsDamage(9))
     }
 }

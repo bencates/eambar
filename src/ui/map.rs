@@ -54,15 +54,28 @@ impl<'a> System<'a> for RenderMapSystem {
 
         if let Some(targeting_reticule) = targeting_reticule {
             for &coord in targeting_reticule.coordinates.iter() {
+                draw_batch.set_fancy(
+                    MAP_ORIGIN + coord.into(),
+                    1,
+                    NO_ROTATION,
+                    BASE_SCALE,
+                    ColorPair::new(BLUE, BLACK),
+                    to_cp437('█'),
+                );
+            }
+
+            for coord in
+                map.area_of_effect(targeting_reticule.cursor, targeting_reticule.aoe_radius)
+            {
                 let color = if coord == targeting_reticule.cursor {
                     ColorPair::new(WHITE, BLACK)
                 } else {
-                    ColorPair::new(BLUE, BLACK)
+                    ColorPair::new(ORANGE, BLACK)
                 };
 
                 draw_batch.set_fancy(
                     MAP_ORIGIN + coord.into(),
-                    1,
+                    2,
                     NO_ROTATION,
                     BASE_SCALE,
                     color,

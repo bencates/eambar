@@ -51,7 +51,7 @@ impl Map {
     }
 
     pub fn field_of_view(&self, origin: Coordinate, radius: i32) -> HashSet<Coordinate> {
-        let mut fov = HashSet::new();
+        let mut fov = HashSet::from([origin]);
 
         for edge in origin.ring(radius) {
             for (c1, c2) in origin.fat_line_to(edge) {

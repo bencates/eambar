@@ -30,13 +30,15 @@ pub fn use_ground_effect(effect: Entity, ctx: &BTerm, world: &mut World) -> RunS
 pub struct TargetingReticule {
     pub coordinates: HashSet<Coordinate>,
     pub cursor: Coordinate,
+    pub aoe_radius: i32,
 }
 
 impl TargetingReticule {
-    pub fn new(origin: Coordinate, range: i32, map: &Map) -> Self {
+    pub fn new(origin: Coordinate, range: i32, aoe_radius: i32, map: &Map) -> Self {
         Self {
             coordinates: map.area_of_effect(origin, range),
             cursor: origin,
+            aoe_radius,
         }
     }
 

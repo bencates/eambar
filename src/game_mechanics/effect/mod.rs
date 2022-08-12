@@ -10,7 +10,7 @@ use crate::prelude::*;
 pub enum Usable {
     OnSelf,
     OnTarget { range: i32 },
-    OnGround { range: i32 },
+    OnGround { range: i32, radius: i32 },
 }
 
 #[derive(Component)]
