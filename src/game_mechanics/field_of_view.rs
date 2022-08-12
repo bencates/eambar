@@ -59,18 +59,7 @@ impl<'a> System<'a> for VisibilitySystem {
         for (entity, &coord, vs, _) in (&entities, &coordinates, &mut viewsheds, &changed).join() {
             log::trace!("Updating FOV for {entity:?}");
 
-            vs.visible_tiles.clear();
-
-            for edge in coord.ring(vs.range) {
-                for (c1, c2) in coord.fat_line_to(edge) {
-                    vs.visible_tiles.insert(c1);
-                    vs.visible_tiles.insert(c2);
-
-                    if map[c1].is_opaque() && map[c2].is_opaque() {
-                        break;
-                    }
-                }
-            }
+            vs.visible_tiles = map.field_of_view(coord, vs.range);
 
             if entity == *player {
                 for &coord in vs.visible_tiles.iter() {

@@ -1,6 +1,9 @@
 use super::tile::Tile;
 use crate::{game_mechanics::is_legal_move, prelude::*};
-use std::ops::{Index, IndexMut};
+use std::{
+    collections::HashSet,
+    ops::{Index, IndexMut},
+};
 
 pub struct Map {
     /// Tiles are stored as an "odd-q" rectangle in row-major order
@@ -45,6 +48,28 @@ impl Map {
                 .into_iter()
                 .map(|idx| Coordinate::from_index(idx, self.width))
         })
+    }
+
+    pub fn field_of_view(&self, origin: Coordinate, radius: i32) -> HashSet<Coordinate> {
+        let mut fov = HashSet::new();
+
+        for edge in origin.ring(radius) {
+            for (c1, c2) in origin.fat_line_to(edge) {
+                fov.extend([c1, c2]);
+
+                if self[c1].is_opaque() && self[c2].is_opaque() {
+                    break;
+                }
+            }
+        }
+
+        fov
+    }
+
+    pub fn area_of_effect(&self, origin: Coordinate, radius: i32) -> HashSet<Coordinate> {
+        let mut aoe = self.field_of_view(origin, radius);
+        aoe.retain(|&c| !self[c].is_opaque());
+        aoe
     }
 
     pub fn in_bounds(&self, coord: Coordinate) -> bool {

@@ -34,27 +34,9 @@ pub struct TargetingReticule {
 
 impl TargetingReticule {
     pub fn new(origin: Coordinate, range: i32, map: &Map) -> Self {
-        let mut coordinates = std::collections::HashSet::new();
-
-        for edge in origin.ring(range) {
-            for (c1, c2) in origin.fat_line_to(edge) {
-                if map[c1].is_opaque() && map[c2].is_opaque() {
-                    break;
-                }
-
-                if !map[c1].is_opaque() {
-                    coordinates.insert(c1);
-                }
-
-                if !map[c2].is_opaque() {
-                    coordinates.insert(c2);
-                }
-            }
-        }
-
         Self {
+            coordinates: map.area_of_effect(origin, range),
             cursor: origin,
-            coordinates,
         }
     }
 
