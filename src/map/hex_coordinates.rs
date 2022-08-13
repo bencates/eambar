@@ -151,47 +151,33 @@ impl Add<Direction> for Coordinate {
 
 #[cfg(test)]
 mod test {
-    use super::*;
+    use {super::*, test_case::test_case};
 
     // Points in odd-q layout.
-    const CLOCK_DIRECTIONS: [(Coordinate, Point); 12] = [
-        (Coordinate { q: 0, r: -2 }, Point { x: 0, y: -2 }), // 12:00
-        (Coordinate { q: 1, r: -2 }, Point { x: 1, y: -2 }), // 1:00
-        (Coordinate { q: 2, r: -2 }, Point { x: 2, y: -1 }), // 2:00
-        (Coordinate { q: 2, r: -1 }, Point { x: 2, y: 0 }),  // 3:00
-        (Coordinate { q: 2, r: 0 }, Point { x: 2, y: 1 }),   // 4:00
-        (Coordinate { q: 1, r: 1 }, Point { x: 1, y: 1 }),   // 5:00
-        (Coordinate { q: 0, r: 2 }, Point { x: 0, y: 2 }),   // 6:00
-        (Coordinate { q: -1, r: 2 }, Point { x: -1, y: 1 }), // 7:00
-        (Coordinate { q: -2, r: 2 }, Point { x: -2, y: 1 }), // 8:00
-        (Coordinate { q: -2, r: 1 }, Point { x: -2, y: 0 }), // 9:00
-        (Coordinate { q: -2, r: 0 }, Point { x: -2, y: -1 }), // 10:00
-        (Coordinate { q: -1, r: -1 }, Point { x: -1, y: -2 }), // 11:00
-    ];
-
-    #[test]
-    fn test_converts_coordinates_to_points() {
-        for (coordinate, point) in CLOCK_DIRECTIONS {
-            assert_eq!(Point::from(coordinate), point);
-        }
+    #[test_case(Coordinate::new( 0, -2), Point::new( 0, -2); "12:00")]
+    #[test_case(Coordinate::new( 1, -2), Point::new( 1, -2);  "1:00")]
+    #[test_case(Coordinate::new( 2, -2), Point::new( 2, -1);  "2:00")]
+    #[test_case(Coordinate::new( 2, -1), Point::new( 2,  0);  "3:00")]
+    #[test_case(Coordinate::new( 2,  0), Point::new( 2,  1);  "4:00")]
+    #[test_case(Coordinate::new( 1,  1), Point::new( 1,  1);  "5:00")]
+    #[test_case(Coordinate::new( 0,  2), Point::new( 0,  2);  "6:00")]
+    #[test_case(Coordinate::new(-1,  2), Point::new(-1,  1);  "7:00")]
+    #[test_case(Coordinate::new(-2,  2), Point::new(-2,  1);  "8:00")]
+    #[test_case(Coordinate::new(-2,  1), Point::new(-2,  0);  "9:00")]
+    #[test_case(Coordinate::new(-2,  0), Point::new(-2, -1); "10:00")]
+    #[test_case(Coordinate::new(-1, -1), Point::new(-1, -2); "11:00")]
+    fn converts_between_coordinates_to_points(coordinate: Coordinate, point: Point) {
+        assert_eq!(Coordinate::from(point), coordinate);
+        assert_eq!(Point::from(coordinate), point);
     }
 
-    #[test]
-    fn test_converts_points_to_coordinates() {
-        for (coordinate, point) in CLOCK_DIRECTIONS {
-            assert_eq!(Coordinate::from(point), coordinate);
-        }
-    }
-
-    #[test]
-    fn test_adding_directions() {
-        let origin = Coordinate { q: 0, r: 0 };
-
-        assert_eq!(origin + North, Coordinate { q: 0, r: -1 });
-        assert_eq!(origin + NorthEast, Coordinate { q: 1, r: -1 });
-        assert_eq!(origin + SouthEast, Coordinate { q: 1, r: 0 });
-        assert_eq!(origin + South, Coordinate { q: 0, r: 1 });
-        assert_eq!(origin + SouthWest, Coordinate { q: -1, r: 1 });
-        assert_eq!(origin + NorthWest, Coordinate { q: -1, r: 0 });
+    #[test_case(North     => Coordinate::new( 0, -1); "north")]
+    #[test_case(NorthEast => Coordinate::new( 1, -1); "north east")]
+    #[test_case(SouthEast => Coordinate::new( 1,  0); "south east")]
+    #[test_case(South     => Coordinate::new( 0,  1); "south")]
+    #[test_case(SouthWest => Coordinate::new(-1,  1); "south west")]
+    #[test_case(NorthWest => Coordinate::new(-1,  0); "north west")]
+    fn adding_directions(direction: Direction) -> Coordinate {
+        Coordinate::new(0, 0) + direction
     }
 }
